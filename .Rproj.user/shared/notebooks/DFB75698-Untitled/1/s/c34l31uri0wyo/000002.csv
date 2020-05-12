@@ -1,0 +1,4 @@
+"0","set.seed(100)"
+"0","splitted <- rsample::initial_split(fpl_ml, 0.7, ""total_points"")"
+"0","fpl_train <- rsample::training(splitted)"
+"0","fpl_test <- rsample::testing(splitted)"

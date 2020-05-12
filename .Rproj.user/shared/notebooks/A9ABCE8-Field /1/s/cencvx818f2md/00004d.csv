@@ -1,0 +1,27 @@
+"0","ggplotly(ggplot(data) +
+  annotate_pitch(colour = ""white"",
+                 fill   = ""black"",
+                 limits = F) +
+  geom_point(aes(x = (X*100) + 2, y = 98 - (Y*100), col = result, size = xG)) +
+  theme_pitch(aspect_ratio = 700/1200) +
+  theme(plot.background = element_rect(fill = ""black""),
+        title = element_text(colour = ""white""), legend.position = ""none"") +
+  coord_flip(xlim = c(49, 101),
+             ylim = c(-1, 101))) %>% 
+layout(plot_bgcolor='black') %>% 
+layout(paper_bgcolor='black') 
+"
+"2","geom_GeomCustomAnn() has yet to be implemented in plotly.
+  If you'd like to see this geom implemented,
+  Please open an issue with your example code at
+  https://github.com/ropensci/plotly/issues"
+"2","geom_GeomCustomAnn() has yet to be implemented in plotly.
+  If you'd like to see this geom implemented,
+  Please open an issue with your example code at
+  https://github.com/ropensci/plotly/issues"
+"2","geom_GeomCustomAnn() has yet to be implemented in plotly.
+  If you'd like to see this geom implemented,
+  Please open an issue with your example code at
+  https://github.com/ropensci/plotly/issues"
+"2","Aspect ratios aren't yet implemented, but you can manually set a suitable height/width"
+"2","Aspect ratios aren't yet implemented, but you can manually set a suitable height/width"

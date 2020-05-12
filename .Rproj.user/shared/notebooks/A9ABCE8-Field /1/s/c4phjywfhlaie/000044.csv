@@ -1,0 +1,15 @@
+"0","ggplot(shots) +
+  annotate_pitch(colour = ""white"",
+                 fill   = ""black"",
+                 limits = FALSE) +
+  geom_point(aes(x = x + 2, y = 98 - y),
+             colour = ""yellow"", 
+             size = 4) +
+  theme_pitch(aspect_ratio = 700/1200) +
+  theme(plot.background = element_rect(fill = ""black""),
+        title = element_text(colour = ""white"")) +
+  coord_flip(xlim = c(49, 101),
+             ylim = c(-1, 101))
+"
+"2","Error: Aesthetics must be either length 1 or the same as the data (2): x, y
+"

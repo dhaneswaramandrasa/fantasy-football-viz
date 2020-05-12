@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1577083301594.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2527938852",
+    "id" : "89FADABA",
+    "lastKnownWriteTime" : 1580372677,
+    "last_content_update" : 1580372677415,
+    "path" : "~/Documents/Algoritma Data Science/DCD_FPL/sidebar.R",
+    "project_path" : "sidebar.R",
+    "properties" : {
+        "cursorPosition" : "48,85",
+        "scrollLine" : "0",
+        "tempName" : "Untitled2"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

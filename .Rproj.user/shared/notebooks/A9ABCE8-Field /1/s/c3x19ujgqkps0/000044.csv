@@ -1,0 +1,24 @@
+"0","ggplotly(ggplot(df) +
+  annotate_pitch(colour = ""white"",
+                 fill   = ""chartreuse4"",dimensions = pitch_custom) +
+  theme_pitch(aspect_ratio = 700/1400) +
+  coord_flip(xlim = c(700, 1085),
+              ylim = c(0, 900)) +
+  geom_point(aes(x = x, y = y), shape = 21,
+             fill = ""red"",
+             colour = ""red"", size = 5) )
+"
+"2","geom_GeomCustomAnn() has yet to be implemented in plotly.
+  If you'd like to see this geom implemented,
+  Please open an issue with your example code at
+  https://github.com/ropensci/plotly/issues"
+"2","geom_GeomCustomAnn() has yet to be implemented in plotly.
+  If you'd like to see this geom implemented,
+  Please open an issue with your example code at
+  https://github.com/ropensci/plotly/issues"
+"2","geom_GeomCustomAnn() has yet to be implemented in plotly.
+  If you'd like to see this geom implemented,
+  Please open an issue with your example code at
+  https://github.com/ropensci/plotly/issues"
+"2","Aspect ratios aren't yet implemented, but you can manually set a suitable height/width"
+"2","Aspect ratios aren't yet implemented, but you can manually set a suitable height/width"

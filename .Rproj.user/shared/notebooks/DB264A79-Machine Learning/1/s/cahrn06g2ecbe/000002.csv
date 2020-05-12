@@ -1,0 +1,61 @@
+"0","library(randomForest)"
+"2","randomForest 4.6-14
+"
+"2","Type rfNews() to see new features/changes/bug fixes.
+"
+"2","
+Attaching package: ‘randomForest’
+
+"
+"2","The following object is masked from ‘package:dials’:
+
+    margin
+
+"
+"2","The following object is masked from ‘package:gridExtra’:
+
+    combine
+
+"
+"2","The following object is masked from ‘package:ggplot2’:
+
+    margin
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    combine
+
+"
+"0","library(ranger)"
+"2","
+Attaching package: ‘ranger’
+
+"
+"2","The following object is masked from ‘package:randomForest’:
+
+    importance
+
+"
+"0","#define model spec"
+"0","model_spec <- rand_forest("
+"0","  mode = ""regression"","
+"0","  mtry = 2,"
+"0","  trees = 500,"
+"0","  min_n = 1)"
+"0",""
+"0","#define model engine"
+"0","model_spec <- set_engine(model_spec,"
+"0","                         engine = ""ranger"","
+"0","                         seed = 123,"
+"0","                         num.threads = parallel::detectCores(),"
+"0","                         importance = ""impurity"")"
+"0",""
+"0","#model fitting"
+"0","set.seed(123)"
+"0","model <- fit_xy("
+"0","  object = model_spec,"
+"0","  x = dplyr::select(data_train, -total_points),"
+"0","  y = dplyr::select(data_train, total_points)"
+"0",")"
+"0",""

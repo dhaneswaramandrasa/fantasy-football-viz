@@ -1,0 +1,443 @@
+library(shinyWidgets)
+
+
+body <- function() {
+  
+  dashboardBody(class="DISABLED", 
+    useShinyjs(),
+    tags$link(rel = "stylesheet", type = "text/css", href = "style.css"),
+    tags$head(tags$style(
+      "#titletable{color: white;
+                                 font-size: 20px;
+                                 font-family: monospace;
+                                 }",
+      '.card {
+                         width: 250px;
+                       clear: both;
+                       /* Add shadows to create the "card" effect */
+                       box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+                       transition: 0.3s;
+                       }
+                       /* On mouse-over, add a deeper shadow */
+                       .card:hover {
+                       box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+                       }
+                       /* Add some padding inside the card container */
+                       .container {
+                       width: 250px;
+                       padding: 2px 16px;
+                       background-color: #2D3741;
+                       font-family: monospace;
+                       }',
+      '.card1{
+                       width: 1000px;
+                       height:300px;
+                       margin:1px;
+                       clear: both;
+                       /* Add shadows to create the "card" effect */
+                       box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+                       transition: 0.3s;
+                       }
+                       /* On mouse-over, add a deeper shadow */
+                       .card:hover {
+                       box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+                       }
+                       /* Add some padding inside the card container */
+                       .background{
+                       width: 1000px;
+                       height:250px;
+                       padding: 2px 16px;
+                       background-color: #2D3741;
+                       font-family: monospace;
+                       }
+                      .centered {
+                      color: white;
+                      font-family: monospace;
+                      position: absolute;
+                       top: 50%;
+                      left: 50%;
+                      transform: translate(-50%, -50%);
+                        }',
+      '.card2{         background-color: #1f262d;
+                       width: 475px;
+                       height: 200px;
+                       clear: both;
+                       color: white;
+                       /* Add shadows to create the "card" effect */
+                       box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+                       transition: 0.3s;
+                       }
+                       /* On mouse-over, add a deeper shadow */
+                       .card:hover {
+                       box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+                       }',
+      '.card3{          background-color: #1f262d;
+                        text-align: center;
+                         width: 250px;
+                         height:260px;
+                         color: white;
+                        font-family: monospace;
+                       /* Add shadows to create the "card" effect */
+                       box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+                       transition: 0.3s;
+                       }
+                       /* On mouse-over, add a deeper shadow */
+                       .card:hover {
+                       box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+                       }
+                       /* Add some padding inside the card container */
+                       .container {
+                       background-color: #1f262d;
+                       text-align: center;
+                       width: 250px;
+                       padding: 2px 16px;
+                       }',
+                '.center {
+            display: block;
+            margin: 10px auto 20px;
+            width: 50%;
+          }',
+      "#title{color: white;
+                                 font-size: 30px;
+                                 font-family: monospace;
+                                 }",
+    HTML("#dropdown-menu-MyDropDownB1 {
+                      background-color: #2D3741 !important;}
+               ",
+         "#dropdown-menu-MyDropDownB2 {
+                      background-color: #2D3741 !important;
+                      width: '300px'}"))),
+    titlePanel(
+      title =
+        tags$link(rel = "shortcut icon", type = "image/vnd.microsoft.icon", href = "https://drive.google.com/uc?id=1fISLrubTKZnfZOve5vG2gacZYdduu9T1"),
+      "Fantasy Football Viz"
+    ),
+    tabItems(
+      tabItem(
+              tabName = "pageHome",
+              #fluidRow(height = "50px",div(class="topimg",img(src=,  height="50%", width="100%"))),
+              fluidRow(style = "margin-top: 1em", column(12, uiOutput("card1"))),
+              fluidRow(style = "margin-top: 1em", 
+                       column(6, uiOutput("card2")),
+                       column(6, uiOutput("card3"))),
+              fluidRow(style = "margin-top: 1em", 
+                       column(6, uiOutput("card4")),
+                       column(6, uiOutput("card5")))
+              
+              
+              ),
+      tabItem(tabName = "pag1", 
+              tabsetPanel(type="tabs", 
+               tabPanel("Season Highlight",
+                fluidRow(style = "margin-left: 2em; margin-top: 2em", dropdownButton(inputId = "MyDropDownB1",
+                selectInput("PickSeasonSum", selected = "2019/2020", choices= levels(fpl_sum$season),
+                            shiny::HTML("<p><span style='color: white'>Select Season</span></p>"), 
+                            multiple = F),
+                selectInput("PickXAxis", selected = "xG", choices= c("Goals",
+                                                    "Assists",
+                                                    "Total Points",
+                                                    "xG",
+                                                    "xA",
+                                                    "Shots",
+                                                    "Key Pass",
+                                                    "xG90",
+                                                    "Goal90",
+                                                    "xA90",
+                                                    "Assists90",
+                                                    "Shots90",
+                                                    "Key Pass 90",
+                                                    "Value"
+                ),
+                shiny::HTML("<p><span style='color: white'>Pick Your X-Axis</span></p>"), 
+                multiple = F),
+                selectInput("PickYAxis",selected = "xA",  choices= c("Goals",
+                                                    "Assists",
+                                                    "Total Points",
+                                                    "xG",
+                                                    "xA",
+                                                    "Shots",
+                                                    "Key Pass",
+                                                    "xG90",
+                                                    "Goal90",
+                                                    "xA90",
+                                                    "Assists90",
+                                                    "Shots90",
+                                                    "Key Pass 90",
+                                                    "Value"
+                ),
+                shiny::HTML("<p><span style='color: white'>Pick Your Y-Axis</span></p>"), 
+                multiple = F),
+                selectInput("PickSize", selected = "Value",    choices= c("Goals",
+                                                   "Assists",
+                                                   "Total Points",
+                                                   "xG",
+                                                   "xA",
+                                                   "Shots",
+                                                   "Key Pass",
+                                                   "xG90",
+                                                   "Goal90",
+                                                   "xA90",
+                                                   "Assists90",
+                                                   "Shots90",
+                                                   "Key Pass 90",
+                                                   "Value"
+                ),
+                shiny::HTML("<p><span style='color: white'>Pick Your Bubble Size Attribute</span></p>"), 
+                multiple = F),
+                circle = T, status = "danger",
+                icon = icon("gear"), width = "300px",
+                
+                tooltip = tooltipOptions(title = "Click to see inputs !")
+                
+              )),
+              fluidRow(column(12, highchartOutput(outputId = "bubblechart", height = "600px", width="1000px")))),
+              tabPanel("Player Journey",
+                fluidRow(style = "margin-left: 2em; margin-top: 2em", dropdownButton(inputId = "MyDropDownB1",
+                      selectInput("PickSeasonStream", selected = "2018/2019" ,choices= levels(fpl$season),
+                            shiny::HTML("<p><span style='color: white'>Select Season</span></p>"), 
+                                multiple = F),
+                      selectInput("PickPlayerStream", selected = c("Mohamed Salah", "Trent Alexander-Arnold", "Raheem Sterling",
+                                                                   "Sadio Mané", "Sergio Agüero", "Kevin De Bruyne", "Henrikh Mkhitaryan",
+                                                                   "Harry Kane","Jamie Vardy","James Maddison"),choices= unique(fpl$player),
+                                  shiny::HTML("<p><span style='color: white'>Select Players (Max. 10)</span></p>"), 
+                                  multiple = T),
+                circle = TRUE, status = "danger",
+                selectInput("PickAttStream", selected = "Total Points", choices= c("Goals",
+                                                                                   "Assists",
+                                                                                   "Total Points",
+                                                                                   "xG",
+                                                                                   "xA",
+                                                                                   "Shots",
+                                                                                   "Key Pass",
+                                                                                   "xG90",
+                                                                                   "Goal90",
+                                                                                   "xA90",
+                                                                                   "Assists90",
+                                                                                   "Shots90",
+                                                                                   "Key Pass 90"
+                ),
+                shiny::HTML("<p><span style='color: white'>Pick Attributes</span></p>"), 
+                multiple = F),
+                icon = icon("gear"), width = "300px",
+                
+                tooltip = tooltipOptions(title = "Click to see inputs !")
+                )),
+                fluidRow(column(12, highchartOutput("streamgraph", height = "1000px", width="1000px")))
+              )
+          )
+      ),
+      # Second tab content
+      tabItem(tabName = "pag2", tags$style(
+        type = "text/css", "li a {color: #ffff; font-family:monospace;}",
+                ".nav-tabs {
+               background-color: #2D3741;
+                }
+
+                li.active a {
+                background-color: #16191c !important;
+                 color:#fff !important;
+                }
+
+                li a:hover,
+                li a:focus,
+                li.active a:hover,
+                li.active a:focus {
+                  background-color: #16191c !important;
+                    color:#fff !important;
+                }
+                
+                picker-input{font-family:monospace;
+                
+                }
+                
+                "),
+                tabsetPanel(type="tabs",
+                tabPanel("Players Shot Map",
+                fluidRow(column(3, style = "margin-top: 5em", plotOutput(outputId = "player_photo1_shots", height = "300px")),
+                         column(3, style = "font-size: 17px", tableOutput("player1_shots_table"),
+                                tags$head(tags$style("#player1_shots_table  table {background-color:#2D3741; font-family:monospace;
+                                color: #FFFFFF;}",  type="text/css"))),
+                         column(3, style = "font-size: 17px",tableOutput("player2_shots_table"),
+                                tags$head(tags$style("#player2_shots_table  table {background-color:#2D3741; font-family:monospace;
+                                color: #FFFFFF;}", media="screen", type="text/css"))),
+                         column(2, style = "margin-top: 5em", plotOutput(outputId = "player_photo2_shots", height = "300px"))
+                         ),
+                fluidRow(style = "margin-left: 2em; margin-top: 2em", 
+                        column(6, dropdownButton(inputId = "MyDropDownB1",
+                  selectInput("PickSituation", selected = unique(fpl_shots$situation) ,choices= levels(fpl_shots$situation),
+                              shiny::HTML("<p><span style='color: white'>Select Situation</span></p>"), 
+                               multiple = T
+                              ),
+                  selectInput("PickShotResult", selected = unique(fpl_shots$result),choices= levels(fpl_shots$result),
+                              shiny::HTML("<p><span style='color: white'>Select Shot Result</span></p>"), 
+                              multiple = T),
+                  style = "unite", icon = icon("gear"), status = "danger", width = "300px",
+                  tooltip = tooltipOptions(title = "Click to see inputs !")
+                )),
+                ),
+                fluidRow(
+                         column(12, style = "margin-left: 2em", align = 'center', plotlyOutput(outputId = "player_shots_map", height = "600px"))
+                         )
+                    ),
+                tabPanel("Stats Comparison",  
+                         fluidRow(column(3, style = "margin-top: 5em", plotOutput(outputId = "player_photo1_shots_2", height = "300px")),
+                                  column(3, style = "font-size: 17px", tableOutput("player1_shots_table_2"),
+                                         tags$head(tags$style("#player1_shots_table_2  table {background-color:#2D3741; font-family:monospace;
+                                color: #FFFFFF;}",  type="text/css"))),
+                                  column(3, style = "font-size: 17px",tableOutput("player2_shots_table_2"),
+                                         tags$head(tags$style("#player2_shots_table_2  table {background-color:#2D3741; font-family:monospace;
+                                color: #FFFFFF;}", media="screen", type="text/css"))),
+                                  column(2, style = "margin-top: 5em", plotOutput(outputId = "player_photo2_shots_2", height = "300px"))
+                         ),
+                         fluidRow(
+                           column(12, style = "margin-left: 0em", align = 'center', highchartOutput(outputId = "player_shots_graph1", height = "500px"))),
+                         fluidRow(
+                           column(12, style = "margin-left: 0em", align = 'center', highchartOutput(outputId = "player_shots_graph2", height = "500px")))
+                     ),
+                  tabPanel("Detailed Stats",  
+                           fluidRow(column(3, style = "margin-top: 5em", plotOutput(outputId = "player_photo1_shots_3", height = "300px")),
+                                    column(3, style = "font-size: 17px", tableOutput("player1_shots_table_3"),
+                                           tags$head(tags$style("#player1_shots_table_3  table {background-color:#2D3741; font-family:monospace;
+                                color: #FFFFFF;}",  type="text/css"))),
+                                    column(3, style = "font-size: 17px",tableOutput("player2_shots_table_3"),
+                                           tags$head(tags$style("#player2_shots_table_3  table {background-color:#2D3741; font-family:monospace;
+                                color: #FFFFFF;}", media="screen", type="text/css"))),
+                                    column(2, style = "margin-top: 5em", plotOutput(outputId = "player_photo2_shots_3", height = "300px"))
+                           ),
+                           tabsetPanel(type = "tabs",
+                            tabPanel("General Stats",
+                           fluidRow(
+                             column(12, style = "margin-top: 2em", align = 'center', highchartOutput(outputId = "player_shots_graph3", height = "320px", width="1000px")))),
+                           tabPanel("General Stats Per 90 Minutes",
+                           fluidRow(
+                             column(12, style = "margin-top: 2em", align = 'center', highchartOutput(outputId = "player_shots_graph4", height = "320px", width="1000px")))),
+                           tabPanel("Shot Types",
+                           fluidRow(
+                             column(12, style = "margin-top: 2em", align = 'center', highchartOutput(outputId = "player_shots_graph5", height = "320px", width="1000px")))),
+                            tabPanel("Shot Situations",
+                            fluidRow(
+                             column(12, style = "margin-top: 2em", align = 'center', highchartOutput(outputId = "player_shots_graph6", height = "320px", width="1000px"))))
+                  ))
+                ),
+              tags$head(tags$style(
+                " body{max-height:300px;
+                      }
+                   .myRow1{height:250px;}
+                   .myRow2{height:350px;}",
+                HTML('
+                        /* body */
+                            .content-wrapper, .right-side {
+                                background-color: #2D3741;
+                            }
+                            .tabs-above > .nav > li[class=active] > a {
+           background-color:  #16191c;
+           color: #FFFF
+        }
+                     
+                     '
+       ) ) ),
+              tags$style(type = "text/css", "
+      .irs-bar {width: 100%; height: 25px; background: black; border-top: 1px solid black; border-bottom: 1px solid black;}
+      .irs-bar-edge {background: black; border: 1px solid black; height: 10px; border-radius: 0px; width: 100px;}
+      .irs-line {border: 1px solid black; height: 25px; border-radius: 0px;}
+      .irs-grid-text {font-family: 'arial'; color: grey; bottom: 17px; z-index: 1;}
+      .irs-grid-pol {display: none;}
+      .irs-max {font-family: 'arial'; color: white;}
+      .irs-min {font-family: 'arial'; color: white;}
+      .irs-single {color:WHITE; background:#6666ff;}
+      .irs-slider {width: 10px; height: 30px; top: 22px;}
+    ",
+         HTML(
+           ".tabs-above > .nav > li[class=active] > a {
+             background-color: #000;
+               color: #FFF;
+           }"
+         )                
+      )
+  ),
+  tabItem(tabName = "pag3",
+          fluidRow(column(2, style = "margin-left: 2em;margin-right: 3em ",
+                          fluidRow(style = "margin-top: 3em", plotOutput(outputId = "player_photo1_pag3", height = "250px")),
+                          fluidRow(style = "font-size: 15px; margin-left: 1em; margin-top: 3em", tableOutput("player1_table_pag3"),
+                                   tags$head(tags$style("#player1_table_pag3  table {background-color:#2D3741; font-family:monospace;
+                                color: #FFFFFF;}",  type="text/css")))
+                          ),
+                   column(6, style = "margin-top: 5em;margin-left: -5em", style = "font-size: 17px", highchartOutput("player_radar"), height = "500px"
+                          ),
+                   column(2,
+                          fluidRow(style = "margin-top: 3em", plotOutput(outputId = "player_photo2_pag3", height = "250px")),
+                          fluidRow(style = "font-size: 15px; margin-left: 1em; margin-top: 3em", tableOutput("player2_table_pag3"),
+                                   tags$head(tags$style("#player2_table_pag3  table {background-color:#2D3741; font-family:monospace;
+                                color: #FFFFFF;}",  type="text/css")))
+                          )
+          ),
+       tabsetPanel(type = "tabs",
+         tabPanel("Player Ranking",
+                  fluidRow(style = "margin-left: 2em; margin-top: 2em", dropdownButton(inputId = "MyDropDownB1",
+                    selectInput("PickPosition", selected = unique(fpl_bar$position),choices= levels(fpl_bar$position),
+                                             shiny::HTML("<p><span style='color: white'>Select Position</span></p>"), 
+                                             multiple = T),
+                                 selectInput("PickAtt", selected = "FPL Form", choices= c(    
+                                   "FPL Form" = "fpl_form",
+                                   "Goal90"= "goals_90",
+                                   "xG90" = "xG_90",
+                                   "xA90" = "xA_90",
+                                   "xGChain90" = "xGChain_90",
+                                   "xGBuildup90" = "xGBuildup_90",
+                                   "Assists90" = "assists_90",
+                                   "Shots90" = "shots_90",
+                                   "KP90" = "key_passes_90"),
+                                   shiny::HTML("<p><span style='color: white'>Select Sorted Attribute</span></p>"), 
+                                   multiple = F),
+                    style = "unite", icon = icon("gear"), status = "danger", width = "300px"
+                                 )),
+          fluidRow(style = "margin-top: 0em", highchartOutput("player_form", height = "600px"))),
+         
+         tabPanel("Club Ranking", fluidRow(
+                                     column(6,style = "margin-top: 2em", pickerInput("PickAttClub", choices= c("Team Form" = "team_form",
+                                                                                     "Opponent Form"= "opponent_form",
+                                                                                     "Scoring Average per Game" = "team_scoring_form",
+                                                                                     "Conceded Average per Game" = "team_conceded_form",
+                                                                                     "Opponent Scoring Average per Game" = "opponent_scoring_form",
+                                                                                     "Opponent Conceded Average per Game" = "opponent_conceded_form"
+                                                                                        ),
+                                                           shiny::HTML("<p><span style='color: white'>Select Attribute (from last 4 matches)</span></p>"), 
+                                                           options = list(`actions-box` = TRUE), multiple = F))
+         ),
+         fluidRow(column(12, style = "margin-top: 2em", highchartOutput("club_form", height = "700px")))
+         )      
+      )
+  ),
+  tabItem(tabName = "pag4",
+          fluidRow(valueBoxOutput("highest", width = 4),valueBoxOutput("lowest", width = 4),valueBoxOutput("average", width = 4)),
+          fluidRow(div(id = "form", column(3, div(id = "form",selectizeInput("PickGK", label = shiny::HTML("<p><span style='color: white'>Pick Goalkeeper (Min. 1)</span></p>"), selected = c("Alex McCarthy"), multiple = T, choices = c(PickGK), options = list(maxItems = 1, placeholder = 'Pick Your Goalkeepers')))), 
+                   column(3, div(id = "form",selectizeInput("PickDF", label = shiny::HTML("<p><span style='color: white'>Pick Defender (Min. 3)</span></p>"), selected = c("Trent Alexander-Arnold","Ricardo Pereira","Diego Rico"), multiple = T,choices = PickDF, options = list(maxItems = 3, placeholder = 'Pick Your Defenders')))),
+                   column(3, div(id = "form",selectizeInput("PickMid", label = shiny::HTML("<p><span style='color: white'>Pick Midfielder (Min. 4)</span></p>"), selected = c("Mohamed Salah","Kevin De Bruyne","Riyad Mahrez","Jack Grealish"), multiple = T,choices = PickMid, options = list(maxItems = 4, placeholder = 'Pick Your Midfielders')))),
+                   column(3, div(id = "form",selectizeInput("PickFor", label = shiny::HTML("<p><span style='color: white'>Pick Forward (Min. 3)</span></p>"), selected = c("Jamie Vardy","Danny Ings","Neal Maupay"), multiple = T,choices = PickFor, options = list(maxItems = 3, placeholder = 'Pick Your Forwards')))))),
+          fluidRow(column(9, style = "margin-left: 2em;",align = "centre", 
+                          fluidRow(style = "margin-top: 3em ; margin-left: 0.4em", 
+                                          dropdownButton("with size = 'xs'", inputId = "MyDropDownB2", circle = F, width = "200px", 
+                                          status = "default",icon = icon("question-sign", lib = "glyphicon"), tooltip = tooltipOptions(title = "Click to optimize your team !"),
+                                          numericInput("TeamValue", width = "200px",label = shiny::HTML("<p><span style='color: white'>Money In The Bank (million pounds)</span></p>"), value = 2.8, min = 0, max= 100),
+                                          selectInput("SelectPosition",width = "200px", label = shiny::HTML("<p><span style='color: white'>Position To Be Replaced</span></p>"), choices = c("Goalkeeper","Defender","Midfielder","Forward"))),
+                                          ),
+                          fluidRow(style = "margin-left: -2em; margin-top: -5.25em", plotOutput("player_pitch", height = "670px")),
+                          ),
+                   column(3, style = "margin-left: -2em;margin-top:3em;",
+                          fluidRow(style = "margin-left: -2em", uiOutput("card_transferout")),
+                          fluidRow(style = "margin-left: -2em;margin-top:5em;", uiOutput("card_transferin"))
+                )
+              ),
+          fluidRow(style = "margin-left: 1.5em; margin-top: 0em",column(6,style = "margin-top: 2em", actionButton("switch", "Switch View",icon("paper-plane"), 
+                                style="color: #fff; background-color: #34404b; border-color: #fff"),
+                   actionButton("reset_input", "Reset")),
+                   column(6, style = "margin-left: -10em;margin-top: 2em", textOutput("titletable"))),
+          fluidRow(column(12, htmlOutput("table_points",height = "1000px", width = "1000px"))),
+          fluidRow(column(12,highchartOutput("playerpoints", height = "500px")))
+          )
+),
+    tags$style(".DISABLED { min-height: 100vh !important};
+                 ")
+)
+  
+}

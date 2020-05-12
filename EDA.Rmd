@@ -1,0 +1,417 @@
+---
+title: "Machine Learning on Fantasy Premier League"
+author: "Dhaneswara Mandrasa T."
+output:
+  rmdformats::readthedown:
+    css: fplgreen.css
+---
+
+# Introduction
+
+Fantasy Premier League (FPL) is a free-to-play game to choose specific combination of real life Premier League players that would contribute points based on the player’s actual statistical performance and their perceived contribution on the field of play. FPL is growing rapidly as it reaches 7 million users this season. 
+
+FPL is a unique and special because it blends the sport with the fans. It gives the fans an opportunity to manage actual Premier League players. As each player has their own assigned priced, fans need to manage their team carefully within limited budget to assemble them. In the beginning, the FPL managers would have to select 15 players, with a maximum of three players from one club. When a player on your team give you attacking contributions on the pitch like goal or assists, your team will be rewarded with points. But when your player get conceded or booked, your team suffers as well. In every round, the manager would be only given a single transfer to change their player to another players. If the manager making more than one transfer in a round, there would be point deductions for them.
+
+Basically there are three basic ways to score points in FPL which are through events such as goals, assists and clean sheets. However the exciting part is your picked captain get the score doubled. So, whenever your captain score a goal, your FPL score will be doubled. So, your captaincy pick is crucial for your FPL team.
+
+
+![](user.png)
+"FPL user growth in the last 13 years. Source: https://fanarena.com/wp-content/uploads/2019/11/Fantasy-Premier-League-Users-per-Season.png"
+
+For FPL managers, selecting players who would produce the most point in each round is bot easy as there are many variables that could influence. Player form may influence in some parts, but however we could not neglected other factors, such as the team overall form or the fixtures. For example, in the season of 2019/2020, Teemu Pukki from Norwich City was having an excellent form leading to the GW 6. He managed to score 49 points across five matches, including a 12-pointer against the holding champion, Manchester City! However, in the six matches afterward, amazingly he only gained 12 points. 
+
+The project aims to make a point prediction model by using machine learning. I use the dataset from fantasy.premierleague.com, understat.com and club elo.com from the 2018/2019 and 2019/2020 season from more than 150 players. The data combined from those sources giving variables such as the player form, team form, home or away fixture, Elo ratings, expected goals per 90 minutes or even the time when the match happened.   
+ 
+As FPL is expected to grow even faster in the future, this point prediction model would be really useful not only for fantasy premier league and football enthusiast, but also for public use. 
+
+```{r results='hide', message=FALSE, warning=FALSE, echo=FALSE}
+library(ggplot2)
+library(reshape2)
+library(RColorBrewer)
+library(GGally)
+library(ggcorrplot)
+library(caret)
+library(plotly)
+library(data.table)
+library(GGally)
+library(tidymodels)
+library(car)
+library(scales)
+library(lmtest)
+library(dplyr)
+library(MASS)
+library(plyr)
+library(readr)
+library(TTR)
+library(ggthemes)
+library(lubridate)
+library(understatr)
+library(ggradar)
+library(bbplot)
+library(ggiraphExtra)
+library(knitr)
+library(kableExtra)
+library(ggtech)
+library(ggalt)
+library(tidyr)
+library(ggsoccer)
+library(tidyverse)
+options(scipen = 100, max.print = 1e+06)
+```
+
+After doing some data cleansing and wrangling which is not shown here, finally we can look into the data. The original dataset contain of 94 variables, however we would only use some of them. Let's take a look at how Mohammed Salah of Liverpool did at the round 12-19 in season 2019/2020:
+
+```{r, echo=FALSE,warning=FALSE}
+fpl <- read.csv("fpl_ml.csv") %>% 
+  dplyr::mutate_if(is.double, funs(round(., 3))) %>% 
+  dplyr::select(-X)
+
+fpl$position<- factor(fpl$position, levels = c("GK", "FB", "CB", "DM", "AM", "ST"))
+```
+
+```{r, echo=FALSE}
+
+fpl_tab <- fpl[(fpl$player == "Mohamed Salah" & fpl$round >= 12 & fpl$round <= 19 & fpl$season == "2019/2020"),]
+ 
+kable(fpl_tab) %>% kable_styling(bootstrap_options = "striped", full_width = F)
+```
+I will dive into more details about variables on the above table that we've just read:
+
+- `total_points`: Our target variable. It is the point that the player gained in each specific round.
+- `club`: The club where the player played.
+- `opponent`: The opponent of the club.
+- `position`: The position of the player on the pitch. Different with FPL terms of position, I classified it into more detail. I divided defender into two different positions, centre back (CB) and full back (FB). While, I divided midfielder into defensive midfielder (DM) and attacking midfielder (AM).
+- `value`: The price of the player that set by FPL.
+- `round`: The gameweek or matchweek that the game take placed.
+- `was_home`: Whether the match was at home or away from the club.
+- `date_hour`: The specific time where the kickoff started.
+- `kickoff_hour`: Category whether the match happened at lunch, afternoon or night.
+- `range_day`: The time difference between the match and the previous Premier League match.
+- `team_form`: The form of the club leading to the match.
+- `opponent_form`: The form of the opponent leading to the match.
+- `club_elo`: The elo rating of the club leading to the match.
+- `opponent_elo`: The elo rating of the opponent leading to the match.
+- `minute_chance`: The number of minutes that the player have in the last 4 rounds prior to the match per 360 minutes. 
+- `fpl_form`: The average number of points that the player have in the last 4 rounds prior to the match.
+- `influence_form`: The average number of influence rating that the player have in the last 4 rounds prior to the match.
+- `creativity_form`: The average number of creativity rating that the player have in the last 4 rounds prior to the match.
+- `threat_form`: The average number of threat rating that the player have in the last 4 rounds prior to the match.
+- `ict_index_form`: The average number of ICT index that the player have in the last 4 rounds prior to the match.
+- `xG_90`: The average number of expected goals that the player have in the last 4 rounds per 90 minutes prior to the match.
+- `xGChain_90`: The average number of expected goals chain that the player have in the last 4 rounds per 90 minutes prior to the match.
+- `xA_90`: The average number of expected assists that the player have in the last 4 rounds per 90 minutes prior to the match.
+- `shots_90`: The average number of shots that the player have in the last 4 rounds per 90 minutes prior to the match.
+- `key_passes_90`: The average number of key passes that the player have in the last 4 rounds per 90 minutes prior to the match.
+
+
+# Exploratory Data Analysis
+
+One of the ways to see the relation between numeric variables is by using correlation plot. We will start by correlate team attributes such as `team_form` and `opponent_form` to our target variable:
+
+```{r, echo=FALSE}
+fpl_num <- fpl %>% 
+          mutate(was_home = as.numeric(was_home)) %>% 
+          dplyr::select_if(is.numeric)
+
+fpl_num_teamcor <- cor(fpl_num %>% dplyr::select(c(total_points, team_form, opponent_form, club_elo, opponent_elo, was_home)))
+
+fpl_num_playercor <- cor(fpl_num %>% dplyr::select(c(total_points, value,minutes_chance, fpl_form, influence_form, creativity_form, threat_form, ict_index_form, xG_90, xGChain_90,xA_90, shots_90, key_passes_90)))
+```
+
+```{r, echo=FALSE}
+library(RColorBrewer)
+ggcorrplot(fpl_num_teamcor, type="upper", colors = brewer.pal(n = 3, name = "RdYlBu"))
+```
+
+Then, we will correlate the player attributes which contain parameters such as `xG_90`, `fpl_form`, and `shots_90`: 
+
+```{r, echo=FALSE}
+ggcorrplot(fpl_num_playercor, type="upper", colors = brewer.pal(n = 3, name = "RdYlBu"))
+```
+
+In both graph, we could say that our target variable, `total_points` show a weak correlation with other parameters. It shows us that we could not interpretate the player points by only using one or few variables. To predict the point, we need to combine other parameters.
+
+The following plot is the average points of that scored by each position in each round. We could see that attacking midfielder (AM) and forward (ST) nearly dominate the highest average in every round. Forwards seem to be more fluctuative than the attacking midfielders, however they have the highest ceiling among the other positions. It also important to be noted that the full back (FB) is having a higher average points than the centre back (CB), most likely because of their attacking contributions on the picth. Defensive midfielders is the lowest among the group, that can be explained because of their lack of involvement in attack and the absence of defensive acknowledgement for them in the game. 
+
+```{r, results='hide', message=FALSE, warning=FALSE,echo=FALSE}
+library(dplyr)
+library(tvthemes)
+
+fpl_mean_pos <- aggregate(total_points ~ round + position + season, fpl, FUN = "mean")
+
+```
+
+```{r,echo=FALSE}
+ggplotly(ggplot(fpl_mean_pos, aes(round, total_points)) + geom_line(aes(col=position)) +theme_calc() + scale_colour_calc() + scale_fill_calc()+ theme_tech(theme="X23andme") + facet_wrap(~ season, ncol = 1) +
+  labs(title = "Average Points per Round by Position",x = "Round", y="Average Points Per Round"))
+```
+
+Does the expensive player really give you more points throughout the season? If we look the following plot, the answer would be correct, generally. However, the real task is to get the best valuable player, which it means player with high points per value (or points per million). In the plot, on the high price range (right of the plot), attacking midfielders is tend to be a better value than forward throughout the season. On the lower price range, we could see that defenders from top team, such as Trent Alexander-Arnold of Liverpool or Aymeric Laporte of Man City are a better value pick than the other positions. 
+
+```{r, results='hide', message=FALSE, warning=FALSE, echo=FALSE}
+
+fpl_name_value <- aggregate(value ~ player + position + club, fpl, FUN = "mean") %>% 
+  mutate(value = value/10) %>% 
+  mutate(value = round(value,1))
+
+fpl_name_point <- aggregate(total_points ~ player+ position + club, fpl, FUN="mean") %>% 
+    mutate(total_points = round(total_points,1))
+
+fpl_value_point <- full_join(fpl_name_point, fpl_name_value, by = c("player","position", "club"))
+```
+
+```{r, echo=FALSE}
+ggplotly( ggplot(fpl_value_point, aes(value, total_points, text = paste('Name:',player,'<br>','Position:',position,'<br>','Club:', club, '<br>','Average Value:', value, '<br>','Average Points:',total_points))) + geom_point(aes(col=position)) + theme_tech(theme="X23andme") + 
+ scale_colour_calc()+ 
+  labs(title = "Average Points by Value", x = "Value", y="Average Points"), tooltip = 'text')
+```
+
+Which position frequently give us double digit returns in each round throughout the season? We are trying answer the question by using the following graph. The left one is the number of single digit returns (6 - 9 points)  that produced by position in each round and the right is the double digit returns (> 9 points). From the graph it is obvious that only full back and attacking midfielder that give us consistent number of single digit return of more than 150 times. However only attacking midfielder that give us more than 100 times of double digit returns throughout the season. 
+
+```{r, results='hide', message=FALSE, warning=FALSE, echo=FALSE}
+fpl_pos_6 <- fpl %>% 
+  dplyr::filter(total_points >= 6 & total_points < 10) %>% 
+  group_by(position) %>% 
+  dplyr::summarise(total_points = n()) %>% 
+  arrange(-total_points) %>% 
+  dplyr::rename("6" = total_points)
+  
+
+fpl_pos_10 <- fpl %>% 
+  dplyr::filter(total_points >= 10) %>% 
+  group_by(position) %>% 
+  dplyr::summarise(total_points = n()) %>% 
+  arrange(-total_points) %>% 
+  dplyr::rename("10" = total_points)
+
+fpl_point_com <- full_join(fpl_pos_6, fpl_pos_10, by = c("position"))
+
+fpl_point_com <- fpl_point_com %>% 
+  gather(label, sum, -position) %>% 
+  mutate(label=as.numeric(label))
+
+fpl_point_com$position <- ifelse(fpl_point_com$position == "GK", "Goalkeeper", ifelse(fpl_point_com$position == "FB", "Full Back",ifelse(fpl_point_com$position == "CB", "Centre Back",ifelse(fpl_point_com$position == "DM", "Def. Midfielder",ifelse(fpl_point_com$position == "AM", "Att. Midfielder",ifelse(fpl_point_com$position == "ST", "Forward", NA)))))) %>% as.factor()
+
+levels(fpl_point_com$position)
+fpl_point_com$position<- factor(fpl_point_com$position, levels = c("Goalkeeper", "Full Back", "Centre Back", "Def. Midfielder", "Att. Midfielder", "Forward"))
+```
+
+```{r, echo=FALSE}
+ggplot(fpl_point_com, aes(label, sum, fill = position) ) + 
+geom_area(stat="identity") + scale_x_continuous() +
+scale_fill_calc() + 
+facet_wrap( ~ position, ncol = 3) + 
+geom_hline(yintercept = 0, size = 1, colour = "#333333") +
+theme_tech(theme="X23andme") + 
+  scale_color_tech(theme="X23andme") + 
+theme(legend.position = "none", axis.text.x = element_blank(),  axis.title.x=element_blank(),
+          axis.title.y=element_blank()) +
+  labs(title = "Single vs Double Digit Return")
+```
+
+In the following plot, we would like to know if club influenced the points gained by player. On the plot, we compare average (yellow dot) and the maximum points (blue dot) that can be achieved by the player from each clubs. Top rank clubs like Liverpool and Manchester City as expected generates high average points and also having a high ceiling than other clubs. Watford shows us that their players could gain high points in one or few rounds although the points will be normalized into the average throughout the season. 
+
+```{r, echo=FALSE}
+fpl_mean <- fpl %>% 
+  group_by(club) %>% 
+  dplyr::summarise(total_points = mean(total_points)) %>% 
+  arrange(-total_points) %>% 
+  dplyr::rename(mean_points = total_points)
+
+fpl_max <- fpl %>% 
+  group_by(club) %>% 
+  dplyr::summarise(total_points = max(total_points)) %>% 
+  arrange(-total_points) %>% 
+  dplyr::rename(max_points = total_points)
+
+fpl_mean_max <- full_join(fpl_mean, fpl_max, by=c("club")) %>% 
+  mutate(gap = max_points - mean_points)
+```
+
+```{r, echo=FALSE}
+ggplot(fpl_mean_max, aes(x = mean_points, xend = max_points, y = reorder(club, gap), group = club)) + 
+  geom_dumbbell(colour = "#dddddd",
+                size = 3,
+                colour_x = "#FAAB18",
+                colour_xend = "#1380A1") +
+theme_tech(theme="X23andme") + 
+  scale_color_tech(theme="X23andme") +
+  labs(title="Club's Average and Maximum Points", x = "Points") + theme(axis.text.y = element_text(size = 10),axis.text.x = element_text(size = 10),
+          axis.title.y=element_blank())
+```
+
+# Machine Learning Model 
+
+## Random Forest
+
+Random forest is a Supervised Learning algorithm which uses ensemble learning method for classification and regression. In order to prevent bias in our model, we remove the data under 0.1% in our target variable, so that our target variable will range from -2 to 16. 
+
+```{r}
+fpl_ml <- read.csv("fpl_ml.csv")
+
+fpl_ml %>% 
+  pull(total_points) %>% 
+  table() %>% 
+  prop.table()*100
+
+fpl_ml_rm <- fpl_ml %>% 
+  dplyr::filter(total_points < 16 & total_points > -2)
+
+```
+
+Before do the modeling, we need to do cross validation. We seperate the data into training and test dataset.
+```{r}
+set.seed(100)
+splitted <- rsample::initial_split(fpl_ml_rm, 0.7, "total_points")
+fpl_train <- rsample::training(splitted)
+fpl_test <- rsample::testing(splitted)
+```
+
+```{r}
+fpl_train <- fpl_train %>% 
+  dplyr::select(- c(player, round, goals, assists, minutes, date_hour, season))
+
+fpl_test <- fpl_test %>% 
+  dplyr::select(- c(player, round, goals, assists, minutes, date_hour, season))
+```
+
+
+```{r}
+set.seed(417)
+
+ctrl <- trainControl(method="repeatedcv", 
+                     number=5, 
+                     repeats = 3)
+```
+
+Then we can start the modeling: 
+```{r}
+#fpl_forest <- train(total_points~., fpl_train, method="rf", trControl= ctrl, ntree = 500)
+
+#saveRDS(fpl_forest, "fpl_forest_RM.RDS")
+
+fpl_forest <- readRDS("fpl_forest.RDS")
+```
+
+```{r}
+fpl_prediction_test <- predict(fpl_forest, fpl_test)
+fpl_prediction_train <- predict(fpl_forest, fpl_train)
+```
+
+## Neural Network/Deep Learning
+
+Neural networks are set of algorithms that comprised of an arrangement of “layers” and “nodes” (representing neurons) such that “information” flows from one later and relayed to another, which designed to recognize patterns. 
+
+Before modeling, we divided the data in train and test data for ratio of 7:3.
+
+```{r}
+fpl_ml_rm <- fpl_ml %>% 
+  dplyr::filter(total_points < 16 & total_points > -2) %>% 
+  dplyr::select(- X)
+
+set.seed(100)
+splitted <- rsample::initial_split(fpl_ml_rm, 0.7, "total_points")
+fpl_train <- rsample::training(splitted)
+fpl_test <- rsample::testing(splitted)
+```
+
+```{r}
+train_x <- fpl_train[,-6]
+test_x <- fpl_test[,-6]
+
+train_y <- fpl_train[,6]
+test_y <- fpl_test[,6]
+```
+
+```{r}
+train_x_keras <- model.matrix(~club + opponent + was_home + club_elo + opponent_elo + position + value + influence_form + creativity_form + threat_form +  threat_form + ict_index_form +
+kickoff_hour + range_day + team_form + opponent_form + fpl_form +
+  goals_90 + assists_90 + xG_90 + xGChain_90 + xGBuildup_90 + xA_90 + shots_90 + key_passes_90 + minutes_chance + scoring_chance + conceded_chance, train_x)
+```
+
+```{r}
+test_x_keras <- model.matrix(~club + opponent + was_home + club_elo + opponent_elo + position + value + influence_form + creativity_form + threat_form +  threat_form + ict_index_form +
+kickoff_hour + range_day + team_form + opponent_form + fpl_form +
+  goals_90 + assists_90 + xG_90 + xGChain_90 + xGBuildup_90 + xA_90 + shots_90 + key_passes_90 + minutes_chance + scoring_chance + conceded_chance, test_x)
+```
+
+```{r}
+train_x_keras <- array_reshape(train_x_keras, dim = dim(train_x_keras))
+test_x_keras <- array_reshape(test_x_keras, dim = dim(test_x_keras))
+
+train_y_keras <- train_y
+```
+
+Now we do the modeling. We created two layers with 64 nodes at the beginning: 
+
+```{r}
+#model <- keras_model_sequential()
+```
+
+```{r}
+#model %>% 
+ # layer_dense(units = 64, input_shape = ncol(train_x_keras), activation = "linear", name = "1") %>% 
+ # layer_dense(units = 32, activation = "linear", name = "2") %>% 
+  #layer_dense(units = 16, activation = "linear", name = "3") %>% 
+  #layer_dense(units = 1, activation = "linear", name = "output")
+```
+
+```{r}
+#model %>% 
+ # compile(loss = "mse", optimizer = optimizer_adam(lr = 0.01), metrics = c("mean_absolute_error"))
+```
+
+```{r}
+#set.seed(100)
+
+#model %>% 
+  #fit(train_x_keras, train_y_keras, epoch = 5, batch_size = 5)
+```
+
+```{r}
+model <- readRDS("model_nn.rds")
+```
+
+```{r}
+pred_test_nn <-  model %>%  predict(test_x_keras)
+
+pred_test_nn <- as.numeric(pred_test_nn)
+
+pred_train_nn <- model %>%  predict(train_x_keras)
+
+pred_train_nn <- as.numeric(pred_train_nn)
+```
+
+
+# Evaluation
+
+For evaluation, there are many parameters, one of them is Mean Absolute Error (MAE). We will seperate the evaluation for data test and data train to see whether the our model is overfitting:
+
+## Random Forest
+```{r}
+yardstick::mae_vec(truth = fpl_train$total_points, estimate = fpl_prediction_train)
+```
+
+```{r}
+yardstick::mae_vec(truth = fpl_test$total_points, estimate = fpl_prediction_test)
+```
+
+For the data train, we have 1.89 of MAE while for data test, the MAE is 2.00. The small differences in MAE betwen data train and data test show that our model is not overfitting. Our data has range from -2 to 16, so that MAE of 2.00 shows that our model has percentage error of 2/(16-(-2)) = 11.11%
+
+## Neural Network
+
+```{r}
+yardstick::mae_vec(truth = train_y, estimate = pred_train_nn)
+```
+
+```{r}
+yardstick::mae_vec(truth = test_y, estimate = pred_test_nn)
+```
+
+In our neural network model, the MAE is 2.34 for the data train, while MAE is 2.41 for data test. Our data has range from -2 to 16, so that MAE of 2.41 shows that our model has percentage error of 2/(16-(-2)) = 13.39%
+
+# Conclusion
+
+In our case, random forest proof to be perform marginally better by 0.4 than neural networkmore accurate in predicting than neural network in our dataset by 0.4. Neural networks works better when there are invariants to the data such as for the case in image recognition. However, when these invariances do not exist, they do not have much of an advantage.
+
+

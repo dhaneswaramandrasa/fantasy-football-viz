@@ -1,0 +1,10 @@
+"0","explanation <- lime::explain(x = rec_rev(data_test) %>% dplyr::select(- total_points) %>% 
+                         slice(1:10), 
+                       explainer = explainer, 
+                       n_features = 10,
+                       n_permutations = 500,
+                       dist_fun = ""manhattan"",
+                       kernel_width = 3)
+"
+"2","Error: Missing data in columns: PC1.
+"

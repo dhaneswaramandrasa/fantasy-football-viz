@@ -1,0 +1,4 @@
+"0","fpl <- read.csv(""FPL.csv"") %>% "
+"0","  mutate_if(is.numeric, round, 3)"
+"0",""
+"0","fpl$position<- factor(fpl$position, levels = c(""GK"", ""FB"", ""CB"", ""DM"", ""AM"", ""ST""))"

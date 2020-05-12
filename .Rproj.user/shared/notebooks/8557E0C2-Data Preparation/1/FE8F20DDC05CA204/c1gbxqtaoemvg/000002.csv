@@ -1,0 +1,7 @@
+"0","x <- ts(fpl$threat, frequency = 1)"
+"0",""
+"0","y <- matrix(SMA(x,4))"
+"0",""
+"0","fpl <- fpl %>% "
+"0","  mutate(new_col = y[,1],"
+"0","         threat_form= lag(new_col))"

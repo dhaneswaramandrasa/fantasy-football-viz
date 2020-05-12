@@ -1,0 +1,5 @@
+"0","train_x <- fpl_train[,-6]"
+"0","test_x <- fpl_test[,-6]"
+"0",""
+"0","train_y <- fpl_train[,6]"
+"0","test_y <- fpl_test[,6]"

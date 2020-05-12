@@ -1,0 +1,3 @@
+"0",""
+"0","fpl_mean_pos <- aggregate(total_points ~ round + position, fpl, FUN = ""mean"")"
+"0",""

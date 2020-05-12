@@ -1,0 +1,4 @@
+"0","explainer <- lime::lime(x = rec_rev(data_train) %>% dplyr::select(-total_points), 
+                  model = model)
+"
+"2","Data contains numeric columns with zero variance"

@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1580328695001.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1897146029",
+    "id" : "2194E5A9",
+    "lastKnownWriteTime" : 1580356090,
+    "last_content_update" : 1580356090558,
+    "path" : "~/Documents/Algoritma Data Science/DCD_FPL/Data Preparation.Rmd",
+    "project_path" : "Data Preparation.Rmd",
+    "properties" : {
+        "cursorPosition" : "15,15",
+        "scrollLine" : "39",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 12,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

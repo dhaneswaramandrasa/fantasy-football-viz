@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1580357156660.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3148426802",
+    "id" : "19DF2CA4",
+    "lastKnownWriteTime" : 1580386441,
+    "last_content_update" : 1580386441663,
+    "path" : "~/Documents/Algoritma Data Science/DCD_FPL/global.R",
+    "project_path" : "global.R",
+    "properties" : {
+        "cursorPosition" : "8,24",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 14,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

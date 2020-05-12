@@ -1,0 +1,8 @@
+"0","library(fuzzyjoin)"
+"0","library(tidyverse)"
+"0","library(dplyr)"
+"0",""
+"0","fpl$kickoff_time <- as.Date(fpl$kickoff_time)"
+"0",""
+"0","fpl <- fuzzy_left_join(fpl, elo, by = c(""club"" = ""club"", ""kickoff_time"" = ""From"", ""kickoff_time""=""To""),"
+"0","    match_fun = list(`==`, `>=`, `<=`)) "

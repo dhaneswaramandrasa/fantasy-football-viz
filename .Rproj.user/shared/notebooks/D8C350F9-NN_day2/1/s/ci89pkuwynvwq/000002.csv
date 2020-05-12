@@ -1,0 +1,3 @@
+"0","set.seed(100)"
+"0","model_nn <- neuralnet(formula = y ~ Var1 + Var2 + Var3, data = dat, hidden = 0, rep = 10)"
+"0","plot(model_nn,rep=2)"

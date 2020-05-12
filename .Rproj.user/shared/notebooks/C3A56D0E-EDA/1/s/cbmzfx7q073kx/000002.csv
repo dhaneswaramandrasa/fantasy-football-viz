@@ -1,0 +1,8 @@
+"0","set.seed(417)"
+"0",""
+"0","ctrl <- trainControl(method=""repeatedcv"", "
+"0","                     number=5, "
+"0","                     repeats = 3)"
+"2","Error in trainControl(method = ""repeatedcv"", number = 5, repeats = 3) : 
+  could not find function ""trainControl""
+"

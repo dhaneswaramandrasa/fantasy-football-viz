@@ -1,0 +1,7 @@
+"0","library(dplyr)"
+"0","library(tvthemes)"
+"0",""
+"0","fpl %>% "
+"0","  mutate(round = as.factor(round)) %>% "
+"0","  group_by(round, position) %>% "
+"0","  summarise(total_points = sum(total_points)) "

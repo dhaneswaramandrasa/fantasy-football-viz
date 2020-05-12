@@ -1,0 +1,1 @@
+"0","pred <- compute(nn_reg, dat[,-4], rep= 1)"

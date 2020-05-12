@@ -1,0 +1,8 @@
+"0","set.seed(417)"
+"0",""
+"0","totalFold <- 15"
+"0","seeds <- vector(mode = ""list"", length = totalFold + 1)"
+"0",""
+"0","ctrl <- trainControl(method=""repeatedcv"", "
+"0","                     number=5, "
+"0","                     repeats = 3)"

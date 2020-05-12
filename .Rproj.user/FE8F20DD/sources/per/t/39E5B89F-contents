@@ -1,0 +1,526 @@
+---
+title: "Untitled"
+author: "Dhaneswara Mandrasa T."
+date: "12/29/2019"
+output: html_document
+---
+
+```{r results='hide', message=FALSE, warning=FALSE}
+library(tidyverse)
+library(caret)
+library(plotly)
+library(data.table)
+library(GGally)
+library(tidymodels)
+library(car)
+library(scales)
+library(lmtest)
+library(dplyr)
+library(MASS)
+library(plyr)
+library(readr)
+library(TTR)
+library(lubridate)
+library(understatr)
+options(scipen = 100, max.print = 1e+06)
+```
+
+# Getting 2019/2020 data
+
+## Data Input
+```{r}
+path <- "Data_Input/2019_2020/players"
+
+filenames_list <- list.files(path= path, full.names=TRUE)
+
+All <- lapply(filenames_list,function(filename){
+    print(paste("Merging",filename,sep = " "))
+    read.csv(filename)
+})
+
+fpl <- do.call(rbind.data.frame, All)
+
+glimpse(fpl)
+```
+
+## Insert `club`, `Name`, `Position`
+
+```{r}
+id <- read.csv("Data_Input/2019_2020/id.csv") %>% 
+  dplyr::rename(element = id) %>% 
+  dplyr::select(-c(7,8)) 
+
+id <- id[is.na(id$player_id) == F,]
+
+for(i in 1:nrow(id)){
+  if(id$player_id[i]=="3523"){
+    id$player_id[i]="3253"
+  } 
+}
+
+
+fpl <- inner_join(fpl,id, by=c("element")) %>% 
+  mutate(player_id = as.numeric(player_id))
+
+glimpse(fpl
+        )
+```
+
+## Create `fpl_form` Variable
+```{r}
+
+x <- ts(fpl$total_points, frequency = 1)
+
+y <- matrix(SMA(x,4))
+
+fpl <- fpl %>% 
+  mutate(new_col = y[,1],
+         fpl_form= lag(new_col))
+
+glimpse(fpl)
+```
+
+## Create `influence_form`, `creativity_form`, `threat_form`, `ict_form` variables
+```{r}
+x <- ts(fpl$influence, frequency = 1)
+
+y <- matrix(SMA(x,4))
+
+fpl <- fpl %>% 
+  mutate(new_col = y[,1],
+         influence_form= lag(new_col))
+
+```
+
+```{r}
+x <- ts(fpl$creativity, frequency = 1)
+
+y <- matrix(SMA(x,4))
+
+fpl <- fpl %>% 
+  mutate(new_col = y[,1],
+         creativity_form= lag(new_col))
+```
+
+```{r}
+x <- ts(fpl$threat, frequency = 1)
+
+y <- matrix(SMA(x,4))
+
+fpl <- fpl %>% 
+  mutate(new_col = y[,1],
+         threat_form= lag(new_col))
+```
+
+```{r}
+x <- ts(fpl$ict_index , frequency = 1)
+
+y <- matrix(SMA(x,4))
+
+fpl <- fpl %>% 
+  mutate(new_col = y[,1],
+         ict_index_form= lag(new_col))
+```
+
+
+## Create `team_form` variables
+```{r}
+fpl <- fpl %>% 
+  mutate(point_att = ifelse(fpl$was_home == "True" & (fpl$team_h_score > fpl$team_a_score), 2, ifelse(fpl$was_home == "True" & (fpl$team_h_score == fpl$team_a_score),1,ifelse(fpl$was_home == "False" & (fpl$team_h_score < fpl$team_a_score),2.5,ifelse(fpl$was_home == "False" & (fpl$team_h_score == fpl$team_a_score),1.5, 0))))
+  )
+
+x <- ts(fpl$point_att , frequency = 1)
+
+y <- matrix(SMA(x,4))
+
+fpl <- fpl %>% 
+  mutate(new_col = y[,1],
+         team_form= lag(new_col))
+```
+
+
+## Create `minutes_chance` variable
+```{r}
+x <- ts(fpl$minutes , frequency = 1)
+
+y <- matrix(SMA(x,4))*4/360
+
+fpl <- fpl %>% 
+  mutate(new_col = y[,1],
+         minutes_chance= lag(new_col))
+```
+
+
+## Getting Match Fixture
+```{r}
+fixture <- read.csv("Data_Input/2019_2020/FPL Fixtures 19_20.csv") %>% 
+  mutate(round = as.factor(round))
+```
+
+```{r}
+fpl <- fpl %>% 
+  mutate(round = as.factor(round))
+
+fpl <- inner_join(fpl,fixture, by=c("round", "club")) 
+
+glimpse(fpl)
+```
+
+## Getting Opponent Form
+```{r}
+form <- aggregate(team_form ~ round + club + fixture, fpl, FUN = "mean")
+colnames(form) <- c("round", "opponent", "fixture", "opponent_form")
+
+form$round <- as.factor(form$round)
+
+fpl$round <- as.factor(fpl$round)
+
+
+fpl <- full_join(fpl,form, by=c("round", "opponent","fixture"))
+
+glimpse(fpl)
+```
+
+## Getting time between matches
+```{r}
+fpl$kickoff_time_formatted <- as.Date(fpl$kickoff_time)
+
+fpl$date <- fpl$kickoff_time_formatted
+
+fpl$hour <- as.POSIXct(fpl$kickoff_time, format="%Y-%m-%dT%H:%M:%SZ")
+
+fpl$hour  <- format(strptime(fpl$hour,"%Y-%m-%d %H:%M:%S"),'%H:%M')
+
+fpl$date_hour <- as.POSIXct(paste(fpl$date, fpl$hour), format="%Y-%m-%d %H:%M")
+
+fpl$kickoff_hour <- ifelse(hour(fpl$date_hour ) < 15, "lunchtime kick-off", ifelse(hour(fpl$date_hour ) >= 15 & hour(fpl$date_hour) <= 18, "afternoon kick-off", "night kick-off")) %>% as.factor()
+
+fpl<- fpl %>% 
+  mutate(range_day = date_hour  - lag(date_hour))
+
+glimpse(fpl)
+```
+
+# Understat Data
+```{r}
+understat_data <- read.csv("Data_Input/2019_2020/understat_matches_2019_2020.csv", stringsAsFactors = F) %>% 
+  mutate(player_name=as.character(player_name),
+         date=as.Date(date))
+
+for(i in 1:nrow(understat_data)){
+  if(understat_data$match_id[i]=="11802"){
+    understat_data$date[i]="2019-12-09"
+  } 
+}
+
+glimpse(understat_data)
+```
+
+
+```{r}
+fpl <- left_join(fpl, understat_data, by=c("player_id","date"))  %>% 
+  mutate(player_name= as.factor(player_name))
+
+glimpse(fpl)
+```
+
+# Getting club elo & opponent elo rating
+```{r}
+liv_elo <- read.csv("http://api.clubelo.com/liverpool")
+mci_elo <- read.csv("http://api.clubelo.com/mancity")
+tot_elo <- read.csv("http://api.clubelo.com/tottenham")
+che_elo <- read.csv("http://api.clubelo.com/chelsea")
+mun_elo <- read.csv("http://api.clubelo.com/manunited")
+ars_elo <- read.csv("http://api.clubelo.com/arsenal")
+lei_elo <- read.csv("http://api.clubelo.com/leicester")
+wol_elo <- read.csv("http://api.clubelo.com/wolves")
+whu_elo <- read.csv("http://api.clubelo.com/westham")
+bha_elo <- read.csv("http://api.clubelo.com/brighton")
+bou_elo <- read.csv("http://api.clubelo.com/bournemouth")
+car_elo <- read.csv("http://api.clubelo.com/cardiff")
+cry_elo <- read.csv("http://api.clubelo.com/crystalpalace")
+eve_elo <- read.csv("http://api.clubelo.com/everton")
+ful_elo <- read.csv("http://api.clubelo.com/fulham")
+hud_elo <- read.csv("http://api.clubelo.com/huddersfield")
+new_elo <- read.csv("http://api.clubelo.com/newcastle")
+sou_elo <- read.csv("http://api.clubelo.com/southampton")
+wat_elo <- read.csv("http://api.clubelo.com/watford")
+bur_elo <- read.csv("http://api.clubelo.com/burnley")
+avl_elo <- read.csv("http://api.clubelo.com/astonvilla")
+nor_elo <- read.csv("http://api.clubelo.com/norwich")
+shu_elo <- read.csv("http://api.clubelo.com/sheffieldunited")
+
+elo <- rbind(liv_elo,mci_elo,tot_elo,che_elo,mun_elo,ars_elo,lei_elo,wol_elo,whu_elo,bha_elo,bou_elo,car_elo, cry_elo, eve_elo,ful_elo, hud_elo, new_elo, sou_elo, wat_elo, bur_elo, avl_elo, nor_elo, shu_elo) %>% 
+  mutate(From=as.Date(From),
+         To=as.Date(To))
+
+elo <- elo[elo$From >= "2016-08-01", ]                                                          
+                                                                                                                            
+elo$club <- ifelse(elo$Club == "Liverpool", "LIV", ifelse(elo$Club == "Man City", "MCI", ifelse(elo$Club == "Tottenham", "TOT", ifelse(elo$Club == "Chelsea", "CHE", ifelse(elo$Club == "Man United", "MUN", ifelse(elo$Club == "Arsenal", "ARS", ifelse(elo$Club == "Leicester", "LEI", ifelse(elo$Club == "Wolves", "WOL", ifelse(elo$Club == "West Ham", "WHU", ifelse(elo$Club == "Brighton", "BHA", ifelse(elo$Club == "Bournemouth", "BOU", ifelse(elo$Club == "Cardiff", "CAR", ifelse(elo$Club == "Crystal Palace", "CRY", ifelse(elo$Club == "Everton", "EVE", ifelse(elo$Club == "Fulham", "FUL", ifelse(elo$Club == "Huddersfield", "HUD", ifelse(elo$Club == "Newcastle", "NEW", ifelse(elo$Club == "Southampton", "SOU", ifelse(elo$Club == "Watford", "WAT", ifelse(elo$Club == "Burnley", "BUR", ifelse(elo$Club == "Aston Villa", "AVL", ifelse(elo$Club == "Norwich", "NOR", ifelse(elo$Club == "Sheffield United", "SHU", NA))))))))))))))))))))))) %>% as.factor()
+
+elo <- elo %>% 
+  dplyr::filter(club != "FUL" & club != "CAR" & club != "HUD")
+
+elo$club <- droplevels(elo$club)
+
+levels(elo$club)   
+
+
+
+```
+
+```{r}
+library(fuzzyjoin)
+library(tidyverse)
+library(dplyr)
+
+fpl$kickoff_time <- as.Date(fpl$kickoff_time)
+
+fpl <- fuzzy_left_join(fpl, elo, by = c("club" = "club", "kickoff_time" = "From", "kickoff_time"="To"),
+    match_fun = list(`==`, `>=`, `<=`)) 
+
+fpl <- fpl %>% 
+  dplyr::select(-c(club.y, From, To, Level, Country, Rank))
+ 
+  
+fpl <- fpl %>%   
+   dplyr::rename(club = club.x)
+
+glimpse(fpl)
+```
+
+
+ # Opponent Elo
+```{r}
+
+elo_opp <- aggregate(Elo ~ round + club + fixture, fpl, FUN = "mean")
+
+colnames(elo_opp) <- c("round", "opponent", "fixture", "opponent_elo")
+
+fpl <- full_join(fpl, elo_opp, by=c("round", "opponent","fixture"))
+
+write.csv(fpl, "FPL_datacleansing_2019_2020.csv")
+
+fpl <- read.csv("FPL_datacleansing_2019_2020.csv")
+
+
+glimpse(fpl)
+```
+
+```{r}
+fpl$scored <- ifelse(fpl$was_home == "True", fpl$team_h_score, ifelse(fpl$was_home == "False", fpl$team_a_score, NA  ))
+fpl$conceded <- ifelse(fpl$was_home == "True", fpl$team_a_score, ifelse(fpl$was_home == "False", fpl$team_h_score, NA  ))
+```
+
+# Deleting Column
+```{r}
+
+fpl <- fpl %>% 
+  dplyr::select(-c(X.1,X,time,h_goals,a_goals,match_id,roster_id, year,assists.y)) %>% 
+  dplyr::rename(position_detailed = position.y,
+                assists = assists.x,
+                club_elo = Elo,
+                position = position.x) %>% 
+  mutate(xG = replace_na(xG, 0),
+         xA = replace_na(xA, 0),
+         goals = replace_na(goals, 0),
+         shots = replace_na(shots, 0),
+         key_passes = replace_na(key_passes, 0),
+         npg = replace_na(npg, 0),
+         npxG  = replace_na(npxG, 0),
+         xGChain  = replace_na(xGChain, 0),
+         xGBuildup   = replace_na(xGBuildup, 0)
+  )
+
+
+glimpse(fpl)
+```
+
+# scored form
+```{r}
+
+fpl <- fpl %>% 
+  mutate(team_scoring_form= (lag(scored) + lag(scored , 2) + lag(scored ,3) + lag(scored ,4))/4) %>% 
+  mutate(team_conceded_form= (lag(conceded) + lag(conceded, 2) + lag(conceded,3) + lag(conceded,4))/4)
+
+opp <- aggregate(team_scoring_form ~ round + club + fixture, fpl, FUN = "mean")
+
+colnames(opp) <- c("round", "opponent", "fixture", "opponent_scoring_form")
+
+fpl <- full_join(fpl, opp, by=c("round", "opponent","fixture"))
+
+opp <- aggregate(team_conceded_form ~ round + club + fixture, fpl, FUN = "mean")
+
+colnames(opp) <- c("round", "opponent", "fixture", "opponent_conceded_form")
+
+fpl <- full_join(fpl, opp, by=c("round", "opponent","fixture"))
+```
+
+# Creating `xG/90`, 
+```{r}
+fpl <- fpl %>% 
+  mutate(xG_90 = (lag(xG) + lag(xG, 2) + lag(xG,3) + lag(xG,4)) * 90 / (lag(minutes) + lag(minutes, 2) + lag(minutes,3) + lag(minutes,4)),
+         xGChain_90 = (lag(xGChain) + lag(xGChain, 2) + lag(xGChain,3) + lag(xGChain,4)) * 90 / (lag(minutes) + lag(minutes, 2) + lag(minutes,3) + lag(minutes,4)),
+         xGBuildup_90 = (lag(xGBuildup) + lag(xGBuildup, 2) + lag(xGBuildup,3) + lag(xGBuildup,4)) * 90 / (lag(minutes) + lag(minutes, 2) + lag(minutes,3) + lag(minutes,4)),
+         xA_90 = (lag(xA) + lag(xA, 2) + lag(xA,3) + lag(xA,4)) * 90 / (lag(minutes) + lag(minutes, 2) + lag(minutes,3) + lag(minutes,4)),
+        shots_90 = (lag(shots) + lag(shots, 2) + lag(shots,3) + lag(shots,4)) * 90 / (lag(minutes) + lag(minutes, 2) + lag(minutes,3) + lag(minutes,4)),
+        key_passes_90 = (lag(key_passes) + lag(key_passes , 2) + lag(key_passes ,3) + lag(key_passes ,4)) * 90 / (lag(minutes) + lag(minutes, 2) + lag(minutes,3) + lag(minutes,4)),
+        goals_90 = (lag(goals) + lag(goals , 2) + lag(goals ,3) + lag(goals ,4)) * 90 / (lag(minutes) + lag(minutes, 2) + lag(minutes,3) + lag(minutes,4)),
+        npxG_90 = (lag(npxG) + lag(npxG , 2) + lag(npxG ,3) + lag(npxG ,4)) * 90 / (lag(minutes) + lag(minutes, 2) + lag(minutes,3) + lag(minutes,4)),
+        assists_90 = (lag(assists) + lag(assists , 2) + lag(assists ,3) + lag(assists ,4)) * 90 / (lag(minutes) + lag(minutes, 2) + lag(minutes,3) + lag(minutes,4)),
+        npg_90 = (lag(npg) + lag(npg , 2) + lag(npg ,3) + lag(npg ,4)) * 90 / (lag(minutes) + lag(minutes, 2) + lag(minutes,3) + lag(minutes,4))
+         ) 
+
+glimpse(fpl)
+
+
+fpl$season <- "2019/2020"
+
+write.csv(fpl, "fpl_2019_2020.csv")
+glimpse(fpl_shots_2019_2020)
+
+fpl_2019_2020 <- read.csv("fpl_2019_2020.csv")%>%  mutate(xG_90 = replace_na(xG_90, 0),
+         xGChain_90 = replace_na(xGChain_90, 0),
+         xGBuildup_90 = replace_na(xGBuildup_90, 0),
+         xA_90 = replace_na(xA_90, 0),
+         shots_90 = replace_na(shots_90, 0),
+         key_passes_90 = replace_na(key_passes_90, 0),
+         round=as.factor(round),
+         goals_90 = replace_na(goals_90, 0),
+         npxG_90 = replace_na(npxG_90, 0),
+         npg_90 = replace_na(npg_90, 0),
+         fpl_form = replace_na(fpl_form, 0),
+         influence_form = replace_na(influence_form, 0),
+         creativity_form  = replace_na(creativity_form , 0),
+         threat_form = replace_na(threat_form, 0),
+         ict_index_form = replace_na(ict_index_form, 0)
+         ) 
+
+bind <- fpl_shots_2019_2020 %>% dplyr::select(player_id, player) %>% filter(is.na(player) == F)
+
+bind <- unique(bind)
+
+fpl_2019_2020 <- right_join(fpl_2019_2020, bind, by =  c("player_id"))
+
+fpl_2019_2020 <- fpl_2019_2020  %>% 
+   dplyr::select(player_name, player_id,round, club, opponent, was_home, total_points, goals, assists , minutes, club_elo, opponent_elo, position, value, influence_form, creativity_form, threat_form, ict_index_form, date_hour, kickoff_hour,range_day, team_scoring_form, team_conceded_form,opponent_scoring_form, opponent_conceded_form, xG, xA, shots, key_passes,
+                 team_form, opponent_form, club_elo, opponent_elo,fpl_form, goals_90, assists_90,npxG_90, npg_90,
+                                              xG_90,xGChain_90,xGBuildup_90,xA_90,shots_90,key_passes_90,season
+                ) %>% 
+  dplyr::rename(player = player_name)
+
+fpl_repair <- fpl_2019_2020 %>% 
+  dplyr::select(player,player_id) 
+  
+fpl_repair <- unique(fpl_repair)
+
+glimpse(fpl_repair)
+
+fpl_2019_2020 <- inner_join(fpl_2019_2020, fpl_repair, by = c("player_id")) %>% 
+  dplyr::filter(is.na(player.y) == F) %>% 
+  dplyr::select(- c(player.x, player_id)) %>% 
+  dplyr::rename(player = player.y) 
+
+glimpse(fpl_2019_2020)
+
+```
+
+
+# Combine player_shots with fpl data
+```{r}
+understat_shots <- read.csv("Data_Input/2019_2020/understat_shots_2019_2020.csv") 
+understat_shots$date <- as.Date(understat_shots$date)
+
+for(i in 1:nrow(understat_shots)){
+  if(understat_shots$match_id[i]=="11802"){
+    understat_shots$date[i]="2019-12-09"
+  } 
+}
+
+fpl_shots_2019_2020 <- read.csv("fpl_2019_2020.csv") %>%  mutate(xG_90 = replace_na(xG_90, 0),
+         xGChain_90 = replace_na(xGChain_90, 0),
+         xGBuildup_90 = replace_na(xGBuildup_90, 0),
+         xA_90 = replace_na(xA_90, 0),
+         shots_90 = replace_na(shots_90, 0),
+         key_passes_90 = replace_na(key_passes_90, 0),
+         round=as.factor(round)
+         ) 
+
+
+fpl_shots_2019_2020 <- fpl_shots_2019_2020[,c("date", "player_name","round","club","npxG", "xA","npxG","npg","opponent", "kickoff_time", "position","minutes","was_home","element","value","key_passes", "team_form", "opponent_form", "club_elo", "opponent_elo", "xGChain","xGBuildup", "fpl_form", "xG_90","xGChain_90","xGBuildup_90","xA_90","shots_90","key_passes_90","position_detailed","player_id")] %>% 
+  dplyr::rename(player = player_name)
+
+fpl_shots_2019_2020$date <- as.Date(fpl_shots_2019_2020$date)
+
+```
+
+
+```{r}
+
+fpl_shots_2019_2020 <- right_join(understat_shots, fpl_shots_2019_2020, by = c("date", "player_id")) %>% 
+  dplyr::select(- player.x) %>% 
+  dplyr::rename(player = player.y) %>% 
+  mutate(player = as.factor(player)) %>% 
+  mutate(player = droplevels(player)) 
+
+
+fpl_shots_2019_2020 %>% filter(player_id == "318") %>% dplyr::select(player, player_id, round, minutes
+                                                                     ,result,date, xG)
+
+fpl_shots_2019_2020$player <- as.character(fpl_shots_2019_2020$player)
+
+fpl_shots_2019_2020$player <- ifelse(fpl_shots_2019_2020$player == "Ben Chilwell","Benjamin Chilwell",fpl_shots_2019_2020$player)
+fpl_shots_2019_2020$player <- ifelse(fpl_shots_2019_2020$player == "Sokratis","Sokratis Papastathopoulos",fpl_shots_2019_2020$player)
+
+
+fpl_shots_2019_2020$player <- as.factor(fpl_shots_2019_2020$player)
+
+levels(fpl_shots_2019_2020$player)
+```
+
+# Bind FPL shots with FPL picture
+```{r}
+fpl_photo <- read.csv("Data_Input/2019_2020/players_raw.csv") %>% 
+  dplyr::select(c(id, photo)) %>% 
+  dplyr::rename(element = id)
+
+fpl_shots_2019_2020 <- right_join(fpl_photo, fpl_shots_2019_2020, by = c("element"))
+fpl_shots_2019_2020$photo <- gsub('.jpg', '.png', fpl_shots_2019_2020$photo )
+fpl_shots_2019_2020$photo <- paste0("p", fpl_shots_2019_2020$photo)
+glimpse(fpl_shots_2019_2020)
+```
+
+## Create shots variable
+```{r}
+fpl_shots_2019_2020$shots_in_box <- ifelse(fpl_shots_2019_2020$X >= 0.83 & fpl_shots_2019_2020$Y >= 0.18 & fpl_shots_2019_2020$Y <= 0.78, 1, 0)
+fpl_shots_2019_2020$shots <- ifelse(is.na(fpl_shots_2019_2020$X) == F, 1, 0)
+fpl_shots_2019_2020$goals <- ifelse(fpl_shots_2019_2020$result == "Goal", 1, 0)
+fpl_shots_2019_2020$shots_on_target <- ifelse(fpl_shots_2019_2020$result == "Goal" | fpl_shots_2019_2020$result == "SavedShot", 1, 0)
+fpl_shots_2019_2020$shots_off_target <- fpl_shots_2019_2020$shots - fpl_shots_2019_2020$shots_on_target
+
+fpl_shots_2019_2020 <- fpl_shots_2019_2020 %>% 
+  mutate(goals=replace_na(goals,0),
+         xG = replace_na(xG, 0),
+         shots= replace_na(shots, 0),
+         shots_on_target= replace_na(shots_on_target, 0),
+         shots_off_target= replace_na(shots_off_target, 0),
+         shots_in_box = replace_na(shots_in_box, 0)
+         ) 
+glimpse(fpl_shots_2019_2020)
+```
+
+```{r}
+fpl_shots_2019_2020$season <- "2019/2020"
+
+
+fpl_shots_2019_2020 <- fpl_shots_2019_2020 %>% 
+  dplyr::select(photo,  result, X, Y, xG, player, player_id, situation, shotType, match_id, date, player_assisted, round , club, npxG , 
+                npxG, xA, npxG , npg , opponent, position, position_detailed, minutes,minute, was_home, value, key_passes, shots_in_box, shots, 
+                goals, shots_on_target, shots_off_target, team_form, opponent_form, club_elo, opponent_elo, xGChain,xGBuildup, fpl_form,
+                                              xG_90,xGChain_90,xGBuildup_90,xA_90,shots_90,key_passes_90,season
+                )
+
+glimpse(fpl_shots_2019_2020)
+
+```
+

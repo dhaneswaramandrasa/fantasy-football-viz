@@ -1,0 +1,5 @@
+"0","#fpl_forest <- train(total_points~., fpl_train, method=""rf"", trControl= ctrl, ntree = 500)"
+"0",""
+"0","#saveRDS(fpl_forest, ""fpl_forest_RM.RDS"")"
+"0",""
+"0","fpl_forest <- readRDS(""fpl_forest.RDS"")"

@@ -1,0 +1,19 @@
+"0","pacman::p_load(dplyr, tidyr, stringr, stringi, purrr,"
+"0","               tibble, rvest, polite, lubridate,"
+"0","               ggplot2, jsonlite, xml2, qdapRegex,"
+"0","               extrafont, ggrepel, ggforce,"
+"0","               understatr, ggsoccer,"
+"0","               grid, gridExtra)"
+"0","library(englelab)"
+"2","
+Attaching package: ‘englelab’
+
+"
+"2","The following object is masked from ‘package:shiny’:
+
+    runApp
+
+"
+"0","library(ggplot2)"
+"0","library(plotly)"
+"0","loadfonts(quiet = TRUE)"

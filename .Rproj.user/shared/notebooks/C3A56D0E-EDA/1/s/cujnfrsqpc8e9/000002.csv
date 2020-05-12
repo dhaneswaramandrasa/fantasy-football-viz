@@ -1,0 +1,6 @@
+"0","yardstick::mae_vec(truth = test_y, estimate = pred_test_nn)
+"
+"1","[1]"
+"1"," 2.405888"
+"1","
+"

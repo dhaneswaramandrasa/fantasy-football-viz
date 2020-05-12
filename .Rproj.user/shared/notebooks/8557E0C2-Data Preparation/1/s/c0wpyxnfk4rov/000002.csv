@@ -1,0 +1,2 @@
+"0","fpl <- left_join(fpl, understat_data, by=c(""second_name"",""date"")) %>% "
+"0","    mutate(second_name = as.factor(second_name))"

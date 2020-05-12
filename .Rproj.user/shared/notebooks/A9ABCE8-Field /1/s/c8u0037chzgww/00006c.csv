@@ -1,0 +1,6 @@
+"0",""
+"0","ggplot(df) +"
+"0","  annotate_pitch(dimensions = pitch_custom) +"
+"0","  theme_pitch(aspect_ratio = 878/1284) +"
+"0","  geom_point(x = 0, y = 0) +"
+"0","  geom_point(x = 600, y = 878)"

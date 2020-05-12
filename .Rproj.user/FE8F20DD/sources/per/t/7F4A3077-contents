@@ -1,0 +1,2056 @@
+library(devtools)
+library(tibble)
+library(geojsonio)
+library(highcharter)
+library(rjson)
+library(shinyWidgets)
+library(remotes)
+library(ggflags)
+library(rworldmap)
+library(shiny)
+library(DT)
+library(shinydashboard)
+library(dplyr)
+library(plotly)
+library(countrycode)
+library(ggthemes)
+library(ggtech)
+library(tableHTML)
+library(knitr)
+library(kableExtra)
+library(formattable)
+library(ggimage)
+library(TileMaker)
+library(shinymaterial)
+library(scales)
+library(tidyverse)
+
+
+mytheme <- theme(legend.key = element_blank(),
+                 legend.background = element_rect(fill="#2D3741"),
+                 plot.subtitle = element_text(size=6, color="white"),
+                 panel.background = element_rect(fill="#2D3741"),
+                 panel.border = element_rect(fill=NA),
+                 panel.grid.minor.x = element_blank(),
+                 panel.grid.major.x = element_blank(),
+                 panel.grid.major.y = element_line(color="darkgrey", linetype=2),
+                 panel.grid.minor.y = element_blank(),
+                 plot.background = element_rect(fill="#2D3741"),
+                 text = element_text(color="white"),
+                 axis.text = element_text(color="white"))
+
+bg.picker <- function(x){
+  ifelse(x == "LIV", "#fc0303", ifelse(x ==  "MCI", "#03dbfc", ifelse(x == "TOT", "#5f6969", ifelse(x == "CHE", "#2427e3", ifelse(x == "MUN","#e03f0d", ifelse(x == "ARS","#e0290d", ifelse(x =="LEI", "#242dd4", ifelse(x == "WOL", "#f0a61d", ifelse(x == "WHU", "#bd07f0", ifelse(x =="BHA","#076cf0", ifelse(x == "BOU", "#f0071a",ifelse(x ==  "CAR","#1307f0", ifelse(x == "CRY", "#5907f0", ifelse(x == "EVE","#072ef0", ifelse(x == "FUL","#7b8786", ifelse(x == "HUD","#6c66d9", ifelse(x == "NEW","#212124", ifelse(x == "SOU","#db2342", ifelse(x == "WAT","#eddf1c", ifelse(x == "BUR","#52063c", ifelse(x == "AVL","#69055a", ifelse(x == "NOR","#d4be1e", ifelse(x =="SHU", "#f21818", "#FFFF")))))))))))))))))))))))
+}
+
+bg.picker2 <- function(x,y){
+  ifelse(x == y, "#ffff00", ifelse(x >= 6, '#e6ecff', ifelse(x < 6 & x >= 5.5 ,"#b3c6ff",  ifelse(x < 5.5 & x >= 5 ,"#809fff", ifelse(x < 5 & x >= 4.5, 	"#4d79ff", ifelse(x < 4.5 & x >= 4, '#3366ff', ifelse(x < 4 & x >= 3.5, '#1a53ff', ifelse(x < 3.5 & x >= 3, '#0040ff',ifelse(x < 3 & x >= 2.5, "#0039e6", ifelse(x < 2.5 & x >= 2, '#002db3', "#cc0000"))))))))))
+}
+
+server <- function(input, output, session) {
+  
+  observeEvent(input$btn_tab_home, {
+    updateTabItems(session, "tabs", "pag1")
+  })
+  
+  observeEvent(input$btn_tab_player_shots, {
+    updateTabItems(session, "tabs", "pag2")
+  })
+  
+  output$title <- renderText({"Hello and Welcome To Fantasy Football Viz!"})
+  
+  output$card1 <- renderUI({
+    HTML(
+      paste0(
+        '<div class="card1">
+              <div class="background">
+              <img src="https://besthqwallpapers.com/Uploads/29-6-2019/98582/tottenham-hotspur-stadium-english-football-stadium-london-england-soccer-field.jpg" style="width:100%; height:120%;opacity: 0.5;
+  filter: alpha(opacity=50);">
+              </div>
+              <div class="centered">
+              <h1><b>Hello and Welcome To Fantasy Football Viz! </b></h1>
+              <h2><i>We provided you with pack of tools to analyze and forecast player performance to help you choosing potential players in Fantasy Premier League</i></h2>
+              </div>'
+      )
+    )
+  })
+  
+  output$card2 <- renderUI({
+    HTML(
+      paste0(
+        '
+        <head>
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+</head>
+        <div class="card2">
+        <i class="fas fa-globe"style="font-size: 30px";></i>
+              <h3><b> Season Analysis </b></h3>
+              <h4><i> Reviewed how Premier League players accumulate their points, goals, assists and many more throughout the season to determine stand out and consistent players! </i></h4>
+              </div>'
+      )
+    )
+  })
+  
+  output$card3 <- renderUI({
+    HTML(
+      paste0(
+        '
+        <head>
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+</head>
+        <div class="card2">
+        <i class="far fa-address-card"style="font-size: 30px";></i>
+              <h3><b> Player Season Analysis </b></h3>
+              <h4><i> In need to choose between two players? This page helps you to compare both player stats including xG, xA, total shots and many more!  </i></h4>
+              </div>'
+      )
+    )
+  })
+  output$card4 <- renderUI({
+    HTML(
+      paste0(
+        '
+        <head>
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+</head>
+        <div class="card2">
+  
+        <i class="fas fa-chart-bar"style="font-size: 30px";></i>
+              <h3><b> Pre-Gameweek Analysis </b></h3>
+              <h4><i> Which players you must to acquire in the upcoming gameweek? This page will show you the most in-form players based on your desired attributes! </i></h4>
+              </div>'
+      )
+    )
+  })
+  
+  output$card5 <- renderUI({
+    HTML(
+      paste0(
+        '
+        <head>
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+</head>
+        <div class="card2">
+        <i class="fas fa-user-edit"style="font-size: 30px";></i>
+              <h3><b> Assistant Manager </b></h3>
+              <h4><i> Your assistant manager will guide you to project your team performance over the upcoming gameweeks to help you picking the best team possible! </i></h4>
+              </div>'
+      )
+    )
+  })
+  
+  bubble <- reactive({
+     sun <- fpl_sum %>% 
+        dplyr::filter(season == input$PickSeasonSum) %>% 
+        dplyr::rename(Goals = sum_goals,
+                      Assists = sum_assists,
+                      "Total Points" = sum_total_points,
+                      xG = sum_xG,
+                      xA = sum_xA,
+                      Shots = sum_shots,
+                      "Key Pass" = sum_KP,
+                      xG90 = sum_xG90,
+                      Goal90 = sum_goal90,
+                      xA90 = sum_xA90,
+                      Assists90 = sum_assists90,
+                      Shots90 = sum_shots90,
+                      "Key Pass 90" = sum_KP90,
+                      Value = value)
+     
+     sun1 <- sun %>%
+        dplyr::filter(round %in% (input$PickGWs[1])) 
+     
+     sun2 <- sun %>% dplyr::group_by(player) %>% 
+        do(sequence = list_parse(dplyr::select(., x=input$PickXAxis, y=input$PickYAxis, z=input$PickSize, color = color)))
+     
+     bubble <- left_join(sun1, sun2, by = c("player")) %>% 
+        dplyr::select(player, club, position, input$PickXAxis, input$PickYAxis, input$PickSize, color, sequence) %>% 
+        dplyr::rename(x=input$PickXAxis,y=input$PickYAxis,z=input$PickSize)
+     
+     return(bubble)
+  })
+  
+  output$bubblechart <- renderHighchart({
+     
+     bubble <- bubble()
+     
+     highchart() %>% 
+        hc_title(text = paste0("Season ",input$PickSeasonSum, " Highlight: ", input$PickXAxis, " vs ", input$PickYAxis ), style = list(color = "#FFFF", fontSize = "20px", fontFamily = 'monospace')) %>% 
+        hc_chart( backgroundColor = '#2D3741') %>% 
+        hc_add_series(bubble, type = "bubble", showInLegend = F, minSize = 0, maxSize = 100,
+                      dataLabels = list(enabled = TRUE,
+                                        formatter = JS("function(){return this.point.player;}")
+                      )) %>% 
+        hc_motion(series = c(0), enabled = TRUE, labels = paste("<br>Gameweek",1:38), autoplay = TRUE, updateInterval = 1, axisLabel = list(style = list(color = "#FFFF")), title = list(style = list(color = "#FFFF")),
+                  labels = list(enabled = T,style = list(color = "#FFFF")), playIcon = list(style = list(color = "#FFFF"))) %>% 
+        hc_yAxis(title = list(text = input$PickYAxis, style = list(color = "#FFFF")),
+                 labels = list(enabled = T, style = list(color = "#FFFF"),
+                               formatter = JS("function(){return Math.abs(this.value);}")
+                 )) %>% 
+        hc_xAxis(title = list(text = input$PickXAxis, style = list(color = "#FFFF")),
+                 labels = list(enabled = T,style = list(color = "#FFFF"),
+                               formatter = JS("function(){return Math.abs(this.value);}")
+                 )) %>% 
+        hc_tooltip(
+           formatter = JS("function () {
+            return 'Player: ' + this.point.player + '<br/>' + 'Club: ' + this.point.club + '<br/>' +  'Position: ' + this.point.position + '<br/>' + ' x (value): ' + this.x + '<br/>' + 'y (value): ' + this.y + '<br/>' + 'size (value): ' + this.point.z + '</b>'}")
+        ) %>% 
+        hc_legend(reversed = T, itemStyle = list(color = "#FFFF"))
+     
+  })
+  
+  
+  output$streamgraph <- renderHighchart({
+     fpl_stream <- fpl %>% 
+        filter(season == input$PickSeasonStream) %>% 
+        arrange(round) %>% 
+        mutate(round = paste0("Gameweek ", round)) %>% 
+        dplyr::rename(Goals = goals,
+                      Assists = assists,
+                      "Total Points" = total_points,
+                      Shots = shots,
+                      "Key Pass" = key_passes,
+                      Goal90 = goals_90,
+                      Assists90 = assists_90,
+                      Shots90 = shots_90,
+                      "Key Pass 90" = key_passes_90)
+     
+     
+     table1 <- fpl_stream %>% 
+        dplyr::filter(player == input$PickPlayerStream[1]) %>% 
+       dplyr::select(input$PickAttStream) 
+     table2 <- fpl_stream %>% 
+       dplyr::filter(player == input$PickPlayerStream[2]) %>% 
+       dplyr::select(input$PickAttStream) 
+     table3 <- fpl_stream %>% 
+       dplyr::filter(player == input$PickPlayerStream[3]) %>% 
+       dplyr::select(input$PickAttStream) 
+     table4 <- fpl_stream %>% 
+       dplyr::filter(player == input$PickPlayerStream[4]) %>% 
+       dplyr::select(input$PickAttStream) 
+     table5 <- fpl_stream %>% 
+       dplyr::filter(player == input$PickPlayerStream[5]) %>% 
+       dplyr::select(input$PickAttStream) 
+     table6 <- fpl_stream %>% 
+       dplyr::filter(player == input$PickPlayerStream[6]) %>% 
+       dplyr::select(input$PickAttStream) 
+     table7 <- fpl_stream %>% 
+       dplyr::filter(player == input$PickPlayerStream[7]) %>% 
+       dplyr::select(input$PickAttStream) 
+     table8 <- fpl_stream %>% 
+       dplyr::filter(player == input$PickPlayerStream[8]) %>% 
+       dplyr::select(input$PickAttStream) 
+     table9 <- fpl_stream %>% 
+       dplyr::filter(player == input$PickPlayerStream[9]) %>% 
+       dplyr::select(input$PickAttStream) 
+     table10 <- fpl_stream %>% 
+       dplyr::filter(player == input$PickPlayerStream[10]) %>% 
+       dplyr::select(input$PickAttStream) 
+     
+     
+     highchart() %>%
+        hc_title(text = paste0(input$PickSeasonStream, " Player Journey: ", input$PickAttStream), style = list(color = "#FFFF", fontSize = "20px", fontFamily = 'monospace')) %>% 
+        hc_chart(backgroundColor = '#2D3741',type = "streamgraph",
+                 zoomType = 'x') %>% 
+        hc_xAxis(list(categories=unique(fpl_stream$round), labels=list(step= 1,style = list(color = "#FFFF"),align = "left", rotation = 270), type = "category", crosshair = T, lineWidth = 0, tickWidth = 0)) %>%
+        hc_yAxis(visible = F, startOnTick = F, endOnTick = F,
+           labels = list(style = list(color = "#FFFF"),
+                         formatter = JS("function(){return Math.abs(this.value);}")
+           ))  %>% 
+        hc_plotOptions(series = list(label = list(enabled = T, minFontSize = 100, style = list(color = "white")))) %>% 
+        hc_tooltip(
+           shared = FALSE,
+           formatter = JS("function () {
+            return this.point.category + '<br/>' + 
+            '</b> ' +  this.series.name + ': ' + 
+            Highcharts.numberFormat(Math.abs(this.point.y), 1);}")
+        )  %>% 
+        hc_legend(showInLegend = F) %>% 
+        hc_series(
+           list(data = table1[[1]], name =input$PickPlayerStream[1]),
+           list(data = table2[[1]], name =input$PickPlayerStream[2]),
+           list(data = table3[[1]], name = input$PickPlayerStream[3]),
+           list(data = table4[[1]], name = input$PickPlayerStream[4]),
+           list(data = table5[[1]], name = input$PickPlayerStream[5]),
+           list(data = table6[[1]],name =  input$PickPlayerStream[6]),
+           list(data = table7[[1]], name = input$PickPlayerStream[7]),
+           list(data = table8[[1]], name = input$PickPlayerStream[8]),
+           list(data = table9[[1]], name = input$PickPlayerStream[9]),
+           list(data = table10[[1]],name = input$PickPlayerStream[10])
+        )  %>% 
+        hc_legend(reversed = T, itemStyle = list(color = "#FFFF")) 
+  })
+  
+  
+  photos_link_player1_shots <- reactive({
+    req(input$PickPlayer1Shots)
+    
+    fpl_shots <- fpl_shots %>% 
+      dplyr::filter(player %in% input$PickPlayer1Shots) 
+    
+    unique_player <- unique(fpl_shots$photo)
+    
+    unique_player <- paste0("Data_Input/photos/", unique_player)
+    
+    return(unique_player)
+    
+  })
+  
+  
+  output$player_photo1_shots_3  <-output$player_photo1_shots_2  <- output$player_photo1_shots <- renderImage({
+  
+   photos_link <- photos_link_player1_shots()
+   
+   list(src =  photos_link)
+
+    
+  }, deleteFile = FALSE)
+  
+
+  photos_link_player2_shots <- reactive({
+    req(input$PickPlayer2Shots)
+    
+    fpl_shots <- fpl_shots %>% 
+      dplyr::filter(player %in% input$PickPlayer2Shots) 
+    
+    unique_player <- unique(fpl_shots$photo)
+    
+    unique_player <- paste0("Data_Input/photos/", unique_player)
+    
+    return(unique_player)
+    
+  })
+  
+  output$player_photo2_shots_3 <- output$player_photo2_shots_2 <- output$player_photo2_shots <- renderImage({
+    
+    photos_link <- photos_link_player2_shots()
+    
+    list(src =  photos_link)
+    
+    
+  }, deleteFile = FALSE) 
+  
+  
+  player1_shots_table <- reactive({
+    
+    fpl_shots_filter <- fpl_shots %>%
+      dplyr::filter(player == c(input$PickPlayer1Shots) & round %in% (input$PickGWs[1]:input$PickGWs[2]) & season %in% (input$PickSeason)) %>% 
+      dplyr::select(c(player, club, position, shots, shots_in_box, shots_on_target, xG, goals, round, minutes ))
+    
+    shots <- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(shots = sum(shots)) %>% 
+      ungroup() %>% 
+      dplyr::select(shots)
+    
+    shots_in_box <- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(shots_in_box = sum(shots_in_box))%>% 
+      ungroup() %>% 
+      dplyr::select(shots_in_box)
+    
+    shots_on_target <- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(shots_on_target = sum(shots_on_target)) %>% 
+      ungroup() %>% 
+      dplyr::select(shots_on_target)
+    
+    xG <- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(xG = sum(xG))%>% 
+      mutate(xG=round(xG,2)) %>% 
+      ungroup() %>% 
+      dplyr::select(xG)
+    
+    goals<- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(goals = sum(goals)) %>% 
+      ungroup() %>% 
+      dplyr::select(goals)
+    
+    minutes <- fpl_shots_filter %>% 
+      dplyr::select(c(player, round,minutes))
+    
+    minutes <- unique(minutes)
+    
+    minutes <- minutes %>% 
+      dplyr::group_by(player) %>% 
+      dplyr::summarise(minutes = sum(minutes)) %>% 
+      ungroup() %>% 
+      dplyr::select(c(minutes))
+    
+    fpl_shots_filter <- fpl_shots_filter %>% 
+      dplyr::select(c(player, club, position))
+    
+    fpl_shots_filter <- unique(fpl_shots_filter)
+    
+    fpl_shots_filter <-  cbind(fpl_shots_filter, minutes, shots, shots_in_box, shots_on_target, xG, goals) %>% 
+       mutate(position = ifelse(position == "GK", "Goalkeeper", ifelse(position == "CB", "Defender",ifelse(position == "FB", "Defender", ifelse(position == "DM", "Midfielder", ifelse(position == "AM", "Midfielder", ifelse(position == "ST",  "Forward", NA)))))),
+              ) %>% 
+      dplyr::rename("Player" = player,
+                    "Club" = club,
+                    "Position" = position,
+                    "Minutes Played" = minutes,
+                    "Shots" = shots,
+                    "Shots in The Box" = shots_in_box,
+                    "Shots on Target" = shots_on_target,
+                    "Goals" = goals)
+    
+    rownames(fpl_shots_filter) <- fpl_shots_filter$Player
+    
+    fpl_shots_filter <- fpl_shots_filter %>% 
+      dplyr::select(- Player)
+    
+    fpl_shots_filter <- t(fpl_shots_filter) 
+    
+  return(fpl_shots_filter)
+    
+  })
+  
+  output$player1_shots_table_3 <- output$player1_shots_table_2 <-   output$player1_shots_table <- renderTable({player1_shots_table()
+},include.rownames=T)
+  
+  player2_shots_table <- reactive({
+    
+    fpl_shots_filter <- fpl_shots %>%
+      dplyr::filter(player == input$PickPlayer2Shots & round %in% (input$PickGWs[1]:input$PickGWs[2]) & season %in% (input$PickSeason)) %>% 
+      dplyr::select(c(player, club, position, shots, shots_in_box, shots_on_target, xG, goals, round, minutes ))
+    
+    shots <- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(shots = sum(shots)) %>% 
+      ungroup() %>% 
+      dplyr::select(shots)
+    
+    shots_in_box <- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(shots_in_box = sum(shots_in_box))%>% 
+      ungroup() %>% 
+      dplyr::select(shots_in_box)
+    
+    shots_on_target <- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(shots_on_target = sum(shots_on_target)) %>% 
+      ungroup() %>% 
+      dplyr::select(shots_on_target)
+    
+    xG <- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(xG = sum(xG))%>%
+      mutate(xG=round(xG,2)) %>% 
+      ungroup() %>% 
+      dplyr::select(xG)
+    
+    goals<- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(goals = sum(goals)) %>% 
+      ungroup() %>% 
+      dplyr::select(goals)
+    
+    minutes <- fpl_shots_filter %>% 
+      dplyr::select(c(player, round,minutes))
+    
+    minutes <- unique(minutes)
+    
+    minutes <- minutes %>% 
+      dplyr::group_by(player) %>% 
+      dplyr::summarise(minutes = sum(minutes)) %>% 
+      ungroup() %>% 
+      dplyr::select(c(minutes))
+    
+    fpl_shots_filter <- fpl_shots_filter %>% 
+      dplyr::select(c(player, club, position))
+    
+    fpl_shots_filter <- unique(fpl_shots_filter)
+    
+    fpl_shots_filter <-  cbind(fpl_shots_filter, minutes, shots, shots_in_box, shots_on_target, xG, goals) %>% 
+       mutate(position = ifelse(position == "GK", "Goalkeeper", ifelse(position == "CB", "Defender",ifelse(position == "FB", "Defender", ifelse(position == "DM", "Midfielder", ifelse(position == "AM", "Midfielder", ifelse(position == "ST",  "Forward", NA)))))),
+      ) %>% 
+      dplyr::rename("Player" = player,
+                    "Club" = club,
+                    "Position" = position,
+                    "Minutes Played" = minutes,
+                    "Shots" = shots,
+                    "Shots in The Box" = shots_in_box,
+                    "Shots on Target" = shots_on_target,
+                    "Goals" = goals) 
+    
+    rownames(fpl_shots_filter) <- fpl_shots_filter$Player
+    
+    fpl_shots_filter <- fpl_shots_filter %>% 
+      dplyr::select(- Player)
+    
+    fpl_shots_filter <- t(fpl_shots_filter) 
+    
+    return(fpl_shots_filter)
+    
+  })
+  
+  output$player2_shots_table_3 <- output$player2_shots_table_2 <- output$player2_shots_table <- renderTable({player2_shots_table()
+  },include.rownames=T)
+  
+  
+ player_shots_map <- reactive({
+    req(input$PickGWs)
+   req(input$PickSeason)
+   
+    player_shots_map <- fpl_shots %>% 
+      dplyr::filter( season == input$PickSeason &
+                     player %in% c(input$PickPlayer1Shots,input$PickPlayer2Shots) &
+                      round %in% (input$PickGWs[1]:input$PickGWs[2]) &
+                       result %in% c(input$PickShotResult) &
+                       situation %in% c(input$PickSituation)
+                     ) 
+    
+    
+    return(player_shots_map)
+    
+  })
+ 
+ output$player_shots_map <- renderPlotly({
+   
+   player_shots_map <- player_shots_map()
+   
+   ggplotly(createPitch(10600, 6500, "#3B7A57", "#FFFFFF", "#2D3741", "#808080") +
+              geom_point(data = player_shots_map, aes( x = (X*10000*1.2) - 1400, y = 6700 - (Y*10000*0.7), col = player, size = xG, text = paste("Player:",player,"<br>","Situation:", situation, "<br>", "Result:", result,"<br>","Gameweek:", round,"<br>", "Opponent:", opponent, "<br>",   "Minute:", minute, "<br>","Date:", date, "<br>", "Assist:", player_assisted)) )   +
+              coord_flip(xlim = c(5400, 10685),
+                         ylim = c(0, 7040)) + 
+              scale_size_continuous(range = c(1,10)) +
+              ggtech::scale_color_tech(theme = "airbnb") + 
+              theme(plot.background = element_rect(fill = "black"), 
+                    title = element_text(colour = "white"), legend.position = "none"), tooltip = 'text'
+   ) %>% 
+     layout(plot_bgcolor="#2D3741") %>% 
+     layout(paper_bgcolor="#2D3741") 
+ })
+  
+ player_shots_graph1 <- reactive({
+   
+   fpl_shots_filter <- fpl_shots %>%
+     dplyr::filter( player %in% c(input$PickPlayer1Shots,input$PickPlayer2Shots) &
+                    round %in% (input$PickGWs[1]:input$PickGWs[2]) & season %in% (input$PickSeason)) %>% 
+     dplyr::select(c(player, club, position, opponent, was_home,round,shots, shots_in_box, shots_on_target, xG, goals,minutes))
+   
+   shots <- fpl_shots_filter %>% 
+     dplyr::group_by(player, club, position, round) %>% 
+     dplyr::summarise(shots = sum(shots)) %>% 
+     ungroup() %>% 
+     dplyr::select(c(player, round, shots)) %>% 
+     mutate(round=as.numeric(round))
+   
+   shots_on_target <- fpl_shots_filter %>% 
+     dplyr::group_by(player, club, position, round) %>% 
+     dplyr::summarise(shots_on_target = sum(shots_on_target)) %>% 
+     ungroup() %>% 
+     dplyr::select(c(shots_on_target)) 
+   
+   fpl_shots_filter <- cbind(shots,shots_on_target) %>% 
+     mutate(shots_on_target_ratio = round(shots_on_target/shots,2)) %>% 
+     mutate(shots_on_target_ratio = replace_na(shots_on_target_ratio,0)) 
+   
+ })
+ 
+ 
+ output$player_shots_graph1 <- renderHighchart({
+   
+   fpl_shots_filter <- player_shots_graph1()
+   
+   dummy <- data.frame(round = c(input$PickGWs[1]:input$PickGWs[2]))
+   
+   table1 <-  fpl_shots_filter %>% 
+      dplyr::filter(player == input$PickPlayer1Shots) %>% 
+      unique()
+   table1 <- right_join(table1, dummy)
+   table1[is.na(table1)] <- 0
+   
+   table2 <-  fpl_shots_filter %>% 
+      dplyr::filter(player == input$PickPlayer2Shots)%>% 
+      unique()
+   table2 <- right_join(table2, dummy) 
+   table2[is.na(table2)] <- 0
+   
+   round <- c(input$PickGWs[1]:input$PickGWs[2])
+   
+   highchart() %>%
+      hc_title(text = "Total Shots vs Shots On Target", style = list(color = "#FFFF", fontSize = "15px", fontFamily = 'monospace')) %>% 
+      hc_chart(backgroundColor = '#2D3741') %>% 
+      hc_series(
+         list(type = "spline", data = table1$shots, name = paste0(input$PickPlayer1Shots, " (Total Shots)"), color = "#FF5A5F", legend =F),
+         list(type = "column", data = table1$shots_on_target, name = paste0(input$PickPlayer1Shots, " (Shots On Target)" ), color = "#FF5A5F")
+      ) %>% 
+      hc_add_series(type = "spline", data = table2$shots, name = paste0(input$PickPlayer2Shots, " (Total Shots)"), color = "#FFB400") %>% 
+      hc_add_series(type = "column", data = table2$shots_on_target, name = paste0(input$PickPlayer2Shots, " (Shots On Target)" ), color = "#FFB400") %>% 
+      hc_xAxis(list(categories=paste0("GW ", round), labels=list(step= 1,style = list(color = "#FFFF")), type = "category", crosshair = T, lineWidth = 0, margin = 20, tickWidth = 0)) %>%
+      hc_yAxis(
+         labels = list(style = list(color = "#FFFF"),
+                       formatter = JS("function(){return Math.abs(this.value);}")
+         ))  %>% 
+      hc_plotOptions(series = list(label = list(enabled = T, minFontSize = 100, style = list(color = "white")))) %>% 
+      hc_tooltip(
+         shared = FALSE,
+         formatter = JS("function () {
+            return this.point.category + '<br/>' + this.series.name + ': ' +
+            '</b> ' + 
+            Highcharts.numberFormat(Math.abs(this.point.y), 1);}")
+      )  %>% 
+      hc_legend(showInLegend = F,itemStyle = list(color = "#FFFF")) 
+   
+   
+ })
+ 
+ player_shots_graph2 <- reactive({
+   
+    fpl_shots_filter <- fpl_shots %>%
+       dplyr::filter( player %in% c(input$PickPlayer1Shots,input$PickPlayer2Shots) &
+                         round %in% (input$PickGWs[1]:input$PickGWs[2]) & season %in% (input$PickSeason)) %>% 
+       dplyr::select(c(player, club, position, opponent, was_home,round,shots, shots_in_box, shots_on_target, xG, goals,minutes))
+    
+    xG <- fpl_shots_filter %>% 
+       dplyr::group_by(player, club, position, round) %>% 
+       dplyr::summarise(xG = sum(xG)) %>% 
+       ungroup() %>% 
+       dplyr::select(c(player, round, xG)) %>% 
+       mutate(round=as.numeric(round))
+    
+    goals <- fpl_shots_filter %>% 
+       dplyr::group_by(player, club, position, round) %>% 
+       dplyr::summarise(goals = sum(goals)) %>% 
+       ungroup() %>% 
+       dplyr::select(c(goals)) 
+    
+    fpl_shots_filter <- cbind(xG,goals) 
+   
+ }) 
+ 
+ output$player_shots_graph2 <- renderHighchart({
+   
+    fpl_shots_filter <- player_shots_graph2()
+    
+    dummy <- data.frame(round = c(input$PickGWs[1]:input$PickGWs[2]))
+    
+    table1 <-  fpl_shots_filter %>% 
+       dplyr::filter(player == input$PickPlayer1Shots) %>% 
+       unique()
+    table1 <- right_join(table1, dummy)
+    table1[is.na(table1)] <- 0
+    
+    table2 <-  fpl_shots_filter %>% 
+       dplyr::filter(player == input$PickPlayer2Shots)%>% 
+       unique()
+    table2 <- right_join(table2, dummy) 
+    table2[is.na(table2)] <- 0
+    
+    round <- c(input$PickGWs[1]:input$PickGWs[2])
+    
+    highchart() %>%
+       hc_title(text = "xG vs Goals", style = list(color = "#FFFF", fontSize = "15px", fontFamily = 'monospace')) %>% 
+       hc_chart(backgroundColor = '#2D3741') %>% 
+       hc_series(
+          list(type = "spline", data = table1$xG, name = paste0(input$PickPlayer1Shots, " (xG)"), color = "#FF5A5F", legend =F),
+          list(type = "column", data = table1$goals, name = paste0(input$PickPlayer1Shots, " (Goals)" ), color = "#FF5A5F")
+       ) %>% 
+       hc_add_series(type = "spline", data = table2$xG, name = paste0(input$PickPlayer2Shots, " (xG)"), color = "#FFB400") %>% 
+       hc_add_series(type = "column", data = table2$goals, name = paste0(input$PickPlayer2Shots, " (Goals)" ), color = "#FFB400") %>% 
+       hc_xAxis(list(categories=paste0("GW ", round), labels=list(step= 1,style = list(color = "#FFFF")), type = "category", crosshair = T, lineWidth = 0, margin = 20, tickWidth = 0)) %>%
+       hc_yAxis(
+          labels = list(style = list(color = "#FFFF"),
+                        formatter = JS("function(){return Math.abs(this.value);}")
+          ))  %>% 
+       hc_plotOptions(series = list(label = list(enabled = T, minFontSize = 100, style = list(color = "white")))) %>% 
+       hc_tooltip(
+         shared = FALSE,
+         formatter = JS("function () {
+            return this.point.category + '<br/>' + this.series.name + ': ' +
+            '</b> ' + 
+            Highcharts.numberFormat(Math.abs(this.point.y), 1);}")
+       )  %>% 
+       hc_legend(showInLegend = F,itemStyle = list(color = "#FFFF")) 
+ })
+ 
+ player_shots_graph3 <- reactive({
+   
+   situation <- fpl_shots %>% 
+     spread(situation, shots) %>% 
+     mutate(DirectFreekick = replace_na(DirectFreekick,0),
+            FromCorner = replace_na(FromCorner,0),
+            OpenPlay = replace_na(OpenPlay,0),
+            Penalty = replace_na(Penalty,0),
+            SetPiece = replace_na(SetPiece,0),
+     ) %>% 
+     dplyr::select(c(player, round, season, opponent, date, DirectFreekick, FromCorner,OpenPlay,Penalty, SetPiece ))  %>% 
+     dplyr::filter(season == input$PickSeason & player %in% c(input$PickPlayer1Shots,input$PickPlayer2Shots) & round %in% (input$PickGWs[1]:input$PickGWs[2])) 
+   
+   DirectFreekick <- situation %>% 
+      dplyr::group_by(player) %>% 
+      dplyr::summarise(DirectFreekick = sum(DirectFreekick)) %>% 
+      ungroup() %>% 
+      dplyr::select(player, DirectFreekick)
+   
+   FromCorner <- situation %>% 
+      dplyr::group_by(player) %>% 
+      dplyr::summarise(FromCorner = sum(FromCorner)) %>% 
+      ungroup() %>% 
+      dplyr::select(player,FromCorner)
+   
+   OpenPlay <- situation %>% 
+      dplyr::group_by(player) %>% 
+      dplyr::summarise(OpenPlay = sum(OpenPlay)) %>% 
+      ungroup() %>% 
+      dplyr::select(player,OpenPlay)
+   
+   Penalty <- situation %>% 
+      dplyr::group_by(player) %>% 
+      dplyr::summarise(Penalty = sum(Penalty)) %>% 
+      ungroup() %>% 
+      dplyr::select(player,Penalty)
+   
+   SetPiece <- situation %>% 
+      dplyr::group_by(player) %>% 
+      dplyr::summarise(SetPiece = sum(SetPiece)) %>% 
+      ungroup() %>% 
+      dplyr::select(player,SetPiece)
+   
+   shots_type <- fpl_shots %>% 
+      spread(shotType, shots) %>% 
+      mutate(Head = replace_na(Head,0),
+             LeftFoot = replace_na(LeftFoot,0),
+             RightFoot = replace_na(RightFoot,0),
+             OtherBodyPart = replace_na(OtherBodyPart,0)
+      ) %>% 
+      dplyr::select(c(player, round, season,opponent, date, Head, LeftFoot,RightFoot,OtherBodyPart)) %>% 
+      dplyr::filter(season == input$PickSeason & player %in% c(input$PickPlayer1Shots,input$PickPlayer2Shots) & round %in% (input$PickGWs[1]:input$PickGWs[2])) 
+   
+   Head <- shots_type %>% 
+      dplyr::group_by(player) %>% 
+      dplyr::summarise(Head = sum(Head)) %>% 
+      ungroup() %>% 
+      dplyr::select(player,Head)
+   
+   LeftFoot <- shots_type %>% 
+      dplyr::group_by(player) %>% 
+      dplyr::summarise(LeftFoot = sum(LeftFoot)) %>% 
+      ungroup() %>% 
+      dplyr::select(player,LeftFoot)
+   
+   RightFoot <- shots_type %>% 
+      dplyr::group_by(player) %>% 
+      dplyr::summarise(RightFoot = sum(RightFoot)) %>% 
+      ungroup() %>% 
+      dplyr::select(player,RightFoot)
+   
+   OtherBodyPart <- shots_type %>% 
+      dplyr::group_by(player) %>% 
+      dplyr::summarise(OtherBodyPart = sum(OtherBodyPart)) %>% 
+      ungroup() %>% 
+      dplyr::select(player,OtherBodyPart)
+   
+   fpl_shots_filter <- fpl_shots %>%
+      dplyr::filter(season == input$PickSeason & player %in% c(input$PickPlayer1Shots,input$PickPlayer2Shots) & round %in% (input$PickGWs[1]:input$PickGWs[2])) %>% 
+      dplyr::select(c(player, club, position, round, season, opponent, date,shots, shots_in_box, shots_on_target, xG, goals,minutes))
+   
+   shots <- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(shots = sum(shots)) %>% 
+      ungroup() %>% 
+      dplyr::select(player,shots)
+   
+   shots_in_box <- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(shots_in_box = sum(shots_in_box))%>% 
+      ungroup() %>% 
+      dplyr::select(player,shots_in_box)
+   
+   shots_on_target <- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(shots_on_target = sum(shots_on_target)) %>% 
+      ungroup() %>% 
+      dplyr::select(player,shots_on_target)
+   
+   xG <- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(xG = sum(xG))%>% 
+      ungroup() %>% 
+      dplyr::select(player,xG)
+   
+   goals<- fpl_shots_filter %>% 
+      dplyr::group_by(player, club, position) %>% 
+      dplyr::summarise(goals = sum(goals)) %>% 
+      ungroup() %>% 
+      dplyr::select(player,goals)
+   
+   minutes <- fpl_shots_filter %>% 
+      dplyr::select(c(player, round,minutes))
+   
+   minutes <- unique(minutes)
+   
+   minutes <- minutes %>% 
+      dplyr::group_by(player) %>% 
+      dplyr::summarise(minutes = sum(minutes)) %>% 
+      ungroup() %>% 
+      dplyr::select(c(player,minutes))
+   
+   fpl_shots_filter <- list(minutes, shots, shots_in_box, shots_on_target, xG, goals, DirectFreekick, OpenPlay, SetPiece,Penalty, FromCorner, Head, LeftFoot, RightFoot, OtherBodyPart) %>% reduce(inner_join, by = "player")  %>% 
+      mutate("xG90" = round((xG*90/minutes),2),
+             "xG" = round(xG,2),
+             "Shots90" = round((shots*90/minutes),2),
+             "ShotsinTheBox90" = round((shots_in_box*90/minutes),2),
+             "ShotsOnTarget90" = round((shots_on_target*90/minutes),2),
+             "Goals90" = round((goals*90/minutes),2)
+      ) %>% 
+      dplyr::rename("Player" = player,
+                    "Total Shots" = shots,
+                    "Shots in The Box" = shots_in_box,
+                    "Shots on Target" = shots_on_target,
+                    "Goals" = goals,
+                    "Direct Freekick" = DirectFreekick,
+                    "Open Play" = OpenPlay,
+                    "Set Piece" = SetPiece,
+                    "Penalty" = Penalty,
+                    "Corner" = FromCorner,
+                    "Head" = Head,
+                    "Left Foot" = LeftFoot,
+                    "Right Foot" = RightFoot,
+                    "Other Body Parts" = OtherBodyPart
+      ) %>% 
+      dplyr::select(- c(minutes))
+   
+   fpl_shots_filter <- fpl_shots_filter %>% gather(key = "observation", value="value", -c(1)) %>% 
+      mutate(observation = as.factor(observation)) 
+   
+   
+   fpl_shots_filter$observation <- factor(fpl_shots_filter$observation, ordered = T, c("Total Shots", "Shots on Target","Shots in The Box", 
+                                                                                       "Direct Freekick", "Open Play","Set Piece","Penalty",
+                                                                                       "Corner", "Head", "Left Foot", "Right Foot","Other Body Parts",
+                                                                                       "Goals", "Goals90",
+                                                                                       "xG","xG90", "Shots90", "ShotsinTheBox90", "ShotsOnTarget90"
+   ))
+   
+   return(fpl_shots_filter)
+   
+ })
+ 
+ output$player_shots_graph3 <- renderHighchart({
+    fpl_shots_filter <- player_shots_graph3()
+    
+    fpl_shots_filter <- fpl_shots_filter %>% dplyr::filter(observation %in% c("Goals","xG","Shots in The Box", "Shots on Target", "Total Shots"))
+    maxValue <- max(fpl_shots_filter$value) + 1
+   
+   player1 <- fpl_shots_filter %>% dplyr::filter(Player == input$PickPlayer1Shots) %>% mutate(value = - value)
+   player2 <- fpl_shots_filter %>% dplyr::filter(Player == input$PickPlayer2Shots)
+   
+   highchart() %>%
+     hc_title(text = "General Stats", style = list(color = "#FFFF", fontSize = "15px", fontFamily = 'monospace')) %>% 
+     hc_chart(backgroundColor = '#2D3741') %>% 
+     hc_add_series(player1$value,showInLegend = F,
+       type = "bar", name = input$PickPlayer1Shots, color = 'rgba(255,90,95,1)') %>%
+     hc_add_series(player2$value, showInLegend = F,type = "bar", name = input$PickPlayer2Shots, color = "rgba(255,180,0,1)") %>%
+     hc_xAxis(list(categories=player1$observation,reversed=FALSE,labels=list(step= 1,style = list(color = "#FFFF"))),
+              list(categories= player2$observation,opposite= TRUE,reversed= FALSE,linkedTo= 0,labels=list(step= 1,style = list(color = "#FFFF")))) %>%
+     hc_plotOptions(series = list(stacking = "normal")) %>%
+     hc_yAxis(min = -(maxValue), max=maxValue,
+              labels = list(style = list(color = "#FFFF"),
+                formatter = JS("function(){return Math.abs(this.value);}")
+              ) 
+     ) %>%
+     hc_tooltip(
+       shared = FALSE,
+       formatter = JS("function () {
+            return this.point.category + '<br/>' + 
+            '<b>' + this.series.name + '</b> ' + 
+            Highcharts.numberFormat(Math.abs(this.point.y), 1);}")
+     )  %>% 
+      hc_legend(showInLegend = F)    
+   
+   
+ })
+ 
+ output$player_shots_graph4 <- renderHighchart({
+   req(input$PickPlayer1Shots)
+   player_1 <- input$PickPlayer1Shots
+   fpl_shots_filter <- player_shots_graph3()
+   
+   fpl_shots_filter <- fpl_shots_filter %>% dplyr::filter(observation %in% c("Goals90","xG90","ShotsinTheBox90", "ShotsOnTarget90","Shots90"))
+   
+   maxValue <- max(fpl_shots_filter$value) + 0.1
+   
+   player1 <- fpl_shots_filter %>% dplyr::filter(Player == input$PickPlayer1Shots) %>% mutate(value = - value)
+   player2 <- fpl_shots_filter %>% dplyr::filter(Player == input$PickPlayer2Shots)
+   
+   highchart() %>%
+      hc_title(text = "General Stats by Minutes Ratio", style = list(color = "#FFFF", fontSize = "15px", fontFamily = 'monospace')) %>% 
+      hc_chart(backgroundColor = '#2D3741') %>% 
+      hc_add_series(player1$value,showInLegend = F,
+                    type = "bar", name = input$PickPlayer1Shots, color = 'rgba(255,90,95,1)') %>%
+      hc_add_series(player2$value, showInLegend = F,type = "bar", name = input$PickPlayer2Shots, color = "rgba(255,180,0,1)") %>%
+      hc_xAxis(list(categories=player1$observation,reversed=FALSE,labels=list(step= 1,style = list(color = "#FFFF"))),
+               list(categories= player2$observation,opposite= TRUE,reversed= FALSE,linkedTo= 0,labels=list(step= 1,style = list(color = "#FFFF")))) %>%
+      hc_plotOptions(series = list(stacking = "normal")) %>%
+      hc_yAxis(min = -(maxValue), max=maxValue,
+               labels = list(style = list(color = "#FFFF"),
+                             formatter = JS("function(){return Math.abs(this.value);}")
+               ) 
+      ) %>%
+      hc_tooltip(
+         shared = FALSE,
+         formatter = JS("function () {
+            return this.point.category + '<br/>' + 
+            '<b>' + this.series.name + '</b> ' + 
+            Highcharts.numberFormat(Math.abs(this.point.y), 1);}")
+      )  %>% 
+      hc_legend(showInLegend = F) 
+   
+ })
+ 
+ output$player_shots_graph5 <- renderHighchart({
+   req(input$PickPlayer1Shots)
+   player_1 <- input$PickPlayer1Shots
+   fpl_shots_filter <- player_shots_graph3()
+   
+   fpl_shots_filter <- fpl_shots_filter %>% dplyr::filter(observation %in% c("Other Body Parts","Head", "Left Foot","Right Foot"))
+   
+   maxValue <- max(fpl_shots_filter$value) + 1
+   
+   player1 <- fpl_shots_filter %>% dplyr::filter(Player == input$PickPlayer1Shots) %>% mutate(value = - value)
+   player2 <- fpl_shots_filter %>% dplyr::filter(Player == input$PickPlayer2Shots)
+   
+   highchart() %>%
+      hc_title(text = "Shot Types", style = list(color = "#FFFF", fontSize = "15px", fontFamily = 'monospace')) %>% 
+      hc_chart(backgroundColor = '#2D3741') %>% 
+      hc_add_series(player1$value,showInLegend = F,
+                    type = "bar", name = input$PickPlayer1Shots, color = 'rgba(255,90,95,1)') %>%
+      hc_add_series(player2$value, showInLegend = F,type = "bar", name = input$PickPlayer2Shots, color = "rgba(255,180,0,1)") %>%
+      hc_xAxis(list(categories=player1$observation,reversed=FALSE,labels=list(step= 1,style = list(color = "#FFFF"))),
+               list(categories= player2$observation,opposite= TRUE,reversed= FALSE,linkedTo= 0,labels=list(step= 1,style = list(color = "#FFFF")))) %>%
+      hc_plotOptions(series = list(stacking = "normal")) %>%
+      hc_yAxis(min = -(maxValue), max=maxValue,
+               labels = list(style = list(color = "#FFFF"),
+                             formatter = JS("function(){return Math.abs(this.value);}")
+               ) 
+      ) %>%
+      hc_tooltip(
+         shared = FALSE,
+         formatter = JS("function () {
+            return this.point.category + '<br/>' + 
+            '<b>' + this.series.name + '</b> ' + 
+            Highcharts.numberFormat(Math.abs(this.point.y), 1);}")
+      )  %>% 
+      hc_legend(showInLegend = F) 
+   
+ })
+ 
+ output$player_shots_graph6 <- renderHighchart({
+   req(input$PickPlayer1Shots)
+   player_1 <- input$PickPlayer1Shots
+   fpl_shots_filter <- player_shots_graph3()
+   
+   fpl_shots_filter <- fpl_shots_filter %>% dplyr::filter(observation %in% c("Direct Freekick","Penalty","Corner","Set Piece","Open Play"))
+   
+   maxValue <- max(fpl_shots_filter$value) + 1
+   
+   player1 <- fpl_shots_filter %>% dplyr::filter(Player == input$PickPlayer1Shots) %>% mutate(value = - value)
+   player2 <- fpl_shots_filter %>% dplyr::filter(Player == input$PickPlayer2Shots)
+   
+   highchart() %>%
+      hc_title(text = "Shot Situations", style = list(color = "#FFFF", fontSize = "15px", fontFamily = 'monospace')) %>% 
+      hc_chart(backgroundColor = '#2D3741') %>% 
+      hc_add_series(player1$value,showInLegend = F,
+                    type = "bar", name = input$PickPlayer1Shots, color = 'rgba(255,90,95,1)') %>%
+      hc_add_series(player2$value, showInLegend = F,type = "bar", name = input$PickPlayer2Shots, color = "rgba(255,180,0,1)") %>%
+      hc_xAxis(list(categories=player1$observation,reversed=FALSE,labels=list(step= 1,style = list(color = "#FFFF"))),
+               list(categories= player2$observation,opposite= TRUE,reversed= FALSE,linkedTo= 0,labels=list(step= 1,style = list(color = "#FFFF")))) %>%
+      hc_plotOptions(series = list(stacking = "normal")) %>%
+      hc_yAxis(min = -(maxValue), max=maxValue,
+               labels = list(style = list(color = "#FFFF"),
+                             formatter = JS("function(){return Math.abs(this.value);}")
+               ) 
+      ) %>%
+      hc_tooltip(
+         shared = FALSE,
+         formatter = JS("function () {
+            return this.point.category + '<br/>' + 
+            '<b>' + this.series.name + '</b> ' + 
+            Highcharts.numberFormat(Math.abs(this.point.y), 1);}")
+      )  %>% 
+      hc_legend(showInLegend = F) 
+   
+ })
+ 
+ photos_link_player1_GWs <- reactive({
+   req(input$PickPlayer1_pag3)
+   
+   fpl_photo <- fpl_shots %>% 
+     dplyr::filter(player %in% input$PickPlayer1_pag3) 
+   
+   unique_player <- unique(fpl_photo$photo)
+   
+   unique_player <- paste0("Data_Input/photos/", unique_player)
+   
+   return(unique_player)
+   
+ })
+ 
+ 
+ output$player_photo1_pag3 <- renderImage({
+   
+   photos_link <- photos_link_player1_GWs()
+   
+   list(src =  photos_link)
+   
+   
+ }, deleteFile = FALSE)
+ 
+ 
+ photos_link_player2_GWs <- reactive({
+   req(input$PickPlayer2_pag3)
+   
+   fpl_photo <- fpl_shots %>% 
+     dplyr::filter(player %in% input$PickPlayer2_pag3) 
+   
+   unique_player <- unique(fpl_photo$photo)
+   
+   unique_player <- paste0("Data_Input/photos/", unique_player)
+   
+   return(unique_player)
+   
+ })
+ 
+ 
+ output$player_photo2_pag3 <- renderImage({
+   
+   photos_link <- photos_link_player2_GWs()
+   
+   list(src =  photos_link)
+   
+   
+ }, deleteFile = FALSE)
+ 
+ player_radar_1 <- reactive({
+   
+   tes2 <- fpl_bar %>% 
+     filter(season == input$PickSeason_pag3 & round == input$PickGWs_pag3 & player == input$PickPlayer1_pag3) %>% 
+     dplyr::select(team_form, opponent_form, fpl_form, goals_90, xG_90 ,xGChain_90,xGBuildup_90, assists_90, xA_90, shots_90, key_passes_90) %>% 
+      dplyr::rename("Team Form" = team_form,
+                    "Opponent Form" = opponent_form,
+                    "FPL Form" = fpl_form,
+                    "Goal90" = goals_90,
+                    "xG90" = xG_90,
+                    "xGChain90" = xGChain_90,
+                    "xGBuildup90" = xGBuildup_90,
+                    "Assists90" = assists_90,
+                    "xA90" = xA_90,
+                    "Shots90" = shots_90,
+                    "KP90" = key_passes_90)
+      
+   
+   tes2 <- unique(tes2)
+   
+   tes2 <- gather(tes2, key = "key", value = "value")
+   
+ })
+ 
+ player_radar_2 <- reactive({
+   
+   tes2 <- fpl_bar %>% 
+     filter(season == input$PickSeason_pag3 & round == input$PickGWs_pag3 & player == input$PickPlayer2_pag3) %>% 
+     dplyr::select(team_form, opponent_form, fpl_form, goals_90, xG_90 ,xGChain_90,xGBuildup_90, assists_90, xA_90, shots_90, key_passes_90) %>% 
+      dplyr::rename("Team Form" = team_form,
+                    "Opponent Form" = opponent_form,
+                    "FPL Form" = fpl_form,
+                    "Goal90" = goals_90,
+                    "xG90" = xG_90,
+                    "xGChain90" = xGChain_90,
+                    "xGBuildup90" = xGBuildup_90,
+                    "Assists90" = assists_90,
+                    "xA90" = xA_90,
+                    "Shots90" = shots_90,
+                    "KP90" = key_passes_90)
+   
+   tes2 <- unique(tes2)
+   
+   tes2 <- gather(tes2, key = "key", value = "value")
+   
+ })
+ 
+ output$player_radar <- renderHighchart({
+   tes1 <-  player_radar_1()
+   tes2 <- player_radar_2()
+   player_1 <- input$PickPlayer1_pag3
+   player_2 <- input$PickPlayer2_pag3
+
+   highchart() %>% 
+     hc_chart(polar = TRUE,parallelCoordinates = T, backgroundColor = '#2D3741', parallelAxes = list(gridLineWidth = 2)
+     ) %>% 
+     hc_xAxis(categories = tes1$key, 
+              tickmarkPlacement = "on",
+              lineWidth = 0, gridLineColor = "#FFFF", labels = list(style = list(color = "#FFFF",fontFamily = 'monospace')),   title = list(style = list(color = "#FFFF")), 
+              lineColor= "#FFFF",
+              minorGridLineColor= "#FFFF",
+              tickColor= "#FFFF",
+              tickWidth= 1) %>% 
+     hc_yAxis(gridLineColor = "transparent", labels = list(enabled = FALSE, style = list(fontFamily = 'monospace')), min = 0,
+              lineColor= "transparent",
+              gridLineColor= "transparent",
+              tickColor= "transparent",
+              tickWidth= 0, visible = F,gridLineWidth = 0, lineColor = 'transparent', text = NULL,
+              tickLength = 0, ticks = list(display = FALSE), lineWidt = 0,minorTickLength = 0,
+              tickLength = 0,
+              minorGridLineWidth = 0) %>% 
+     hc_series(list(data = tes1[,"value"],
+                    name = player_1,
+                    type = "polygon",colors = 'rgba(255,90,95,0.5)', opacity = 10),
+               list(data = tes2[,"value"],
+                    name = player_2,
+                    type = "polygon", colors = "rgba(255,180,0,0.5)", opacity = 10),
+               list(data = tes1[,"value"],
+                    name = player_1,
+                    type = "line",colors = 'rgba(255,90,95,1)', opacity = 10),
+               list(data = tes2[,"value"],
+                    name = player_2,
+                    type = "line",colors = "rgba(255,180,0,1)", opacity = 10)
+               
+     ) %>% 
+     hc_colors(c('rgba(255,40,40,0.5)', "rgba(41, 184, 255 ,0.5)")) %>% 
+     hc_tooltip(
+       borderWidth = 0,
+       backgroundColor = 'rgba(0, 0, 0, 0.85)',
+       style = list(
+         fontSize = '12px', color = "#FFFF"
+       )
+     ) %>% 
+     hc_legend(showInLegend = F)    
+   
+ })
+ 
+ player1_table_pag3 <- reactive({
+   fpl_filter <- fpl_bar %>%
+     dplyr::filter(player == c(input$PickPlayer1_pag3) & round %in% c( input$PickGWs_pag3) & season == input$PickSeason_pag3) %>% 
+     dplyr::select(c(player, club, position, value, opponent, was_home)) %>% 
+      dplyr::rename(Player = player,
+                    Club = club,
+                    Position = position,
+                    Value = value,
+                    Opponent = opponent,
+                    Venue = was_home) %>% 
+      dplyr::mutate(Venue = ifelse(Venue == "True", "Home","Away"),
+                    Value = Value/10)
+   
+   
+   rownames(fpl_filter) <- fpl_filter$Player
+   fpl_filter <- fpl_filter %>% 
+     dplyr::select(- Player)
+   fpl_filter <- t(fpl_filter)
+ })
+ 
+ output$player1_table_pag3 <- renderTable({player1_table_pag3()
+ },include.rownames=T)
+ 
+ player2_table_pag3 <- reactive({
+   fpl_filter <- fpl_bar %>%
+     dplyr::filter(player == c(input$PickPlayer2_pag3) & round %in% c( input$PickGWs_pag3) & season == input$PickSeason_pag3) %>% 
+     dplyr::select(c(player, club, position, value, opponent, was_home)) %>% 
+      dplyr::rename(Player = player,
+                    Club = club,
+                    Position = position,
+                    Value = value,
+                    Opponent = opponent,
+                    Venue = was_home) %>% 
+      dplyr::mutate(Venue = ifelse(Venue == "True", "Home","Away"),
+                    Value = Value/10)
+   
+   
+   rownames(fpl_filter) <- fpl_filter$Player
+   fpl_filter <- fpl_filter %>% 
+     dplyr::select(- Player)
+   fpl_filter <- t(fpl_filter)
+ })
+ 
+ output$player2_table_pag3 <- renderTable({player2_table_pag3()
+ },include.rownames=T)
+ 
+ player_table_form <- reactive({
+   
+   sun <- fpl_bar %>%
+      dplyr::filter(season == input$PickSeason_pag3) %>% 
+      dplyr::filter(round == input$PickGWs_pag3  &  position %in% (input$PickPosition)) %>% 
+     dplyr::arrange(dplyr::desc(!!rlang::sym(input$PickAtt))) %>% 
+     head(10) 
+   
+ })
+ 
+ output$player_form <- renderHighchart({
+   sun <- player_table_form()
+   
+   highchart() %>% 
+     hc_chart(type = 'bar', backgroundColor = '#2D3741') %>%
+      hc_title(text = paste0("Top 10 Players Prior To Gameweek ", input$PickGWs_pag3, " By ", input$PickAtt), style = list(color = "#FFFF", fontSize = "17px", fontFamily = 'monospace')) %>% 
+     hc_tooltip(outside = TRUE, borderWidth = 0,
+                backgroundColor = 'rgba(0, 0, 0, 0.85)',
+                style = list(
+                  fontSize = '12px', color = "#FFFF"
+                )) %>% 
+     hc_xAxis(categories = sun$player, labels = list(style = list(color = "#FFFF"))
+     ) %>% 
+     hc_yAxis(min = 0, labels = list(style = list(color = "#FFFF"))) %>%
+     hc_legend(reversed = T, itemStyle = list(color = "#FFFF")) %>% 
+     hc_plotOptions(series = list(
+       stacking = 'normal')) %>%
+     hc_series( 
+                 list(data = sun$xGBuildup_90,
+                 name = "xGBuildup90"),
+                list(data = sun$xGChain_90,
+                name = "xGChain90"),
+                list(data = sun$key_passes_90,
+                name = "KP90"),
+               list(data = sun$assists_90,
+               name = "assists90"),   
+               list(data = sun$xA_90,
+                    name = "xA90"),
+               list(data = sun$shots_90,
+                    name = "Shots90"),
+               list(data = sun$goals_90,
+                    name = "Goals90"),
+               list(data = sun$xG_90,
+                    name = "xG90"),
+               list(data = sun$fpl_form,
+                    name = "FPL Form")
+               ) %>% 
+     hc_add_theme(hc_theme_google())
+   
+ })
+ 
+ club_table_form <- reactive({
+    
+    
+    sun <- fpl_bar %>%      
+       dplyr::filter(season == input$PickSeason_pag3) %>% 
+       dplyr::filter(round == input$PickGWs_pag3) %>% 
+       dplyr::select(club, opponent, input$PickAttClub) %>% 
+       dplyr::arrange(dplyr::desc(!!rlang::sym(input$PickAttClub))) %>% 
+       unique()
+ })
+ 
+ output$club_form <- renderHighchart({
+    sun <- club_table_form()
+
+      
+      highchart() %>% 
+       hc_chart(type = 'bar', backgroundColor = '#2D3741') %>%
+       hc_title(text = paste0("Club Ranking Prior To Gameweek ", input$PickGWs_pag3, " by ", input$PickAttClub), style = list(color = "#FFFF", fontSize = "17px", fontFamily = 'monospace')) %>% 
+       hc_tooltip(outside = TRUE, borderWidth = 0,
+                  backgroundColor = 'rgba(0, 0, 0, 0.85)',
+                  style = list(
+                     fontSize = '12px', color = "#FFFF"
+                  )) %>% 
+       hc_xAxis(categories = sun$club, labels = list(style = list(color = "#FFFF"))) %>% 
+       hc_yAxis(min = 0, labels = list(style = list(color = "#FFFF"))) %>%
+       hc_legend(reversed = T, itemStyle = list(color = "#FFFF")) %>% 
+       hc_series(list(data = sun[[3]],
+                      name = input$PickAttClub)
+       ) %>% 
+        hc_plotOptions(
+          bar = list(colorByPoint = T, dataLabels = list(enabled = T, color = "#FFFF")
+          )
+        ) %>% 
+        hc_add_theme(hc_theme_google())
+      
+    
+
+    
+ })
+ 
+player_animation <- reactive({
+    
+    sun <- fpl_sum %>% 
+       dplyr::filter(round == input$PickGWs & season == input$PickSeason) %>% 
+       dplyr::arrange(- sum_goals) %>% 
+       head(10) 
+    
+ }) 
+ 
+ output$player_animation <- renderHighchart({
+    sun <- player_animation()
+    
+    highchart() %>% 
+       hc_chart(type = 'bar', backgroundColor = '#2D3741') %>%
+       hc_tooltip(outside = TRUE, borderWidth = 0,
+                  backgroundColor = 'rgba(0, 0, 0, 0.85)',
+                  style = list(
+                     fontSize = '12px', color = "#FFFF"
+                  )) %>% 
+       hc_xAxis(categories = sun$player, labels = list(style = list(color = "#FFFF"))
+       ) %>% 
+       hc_yAxis(min = 0, labels = list(style = list(color = "#FFFF"))) %>%
+       hc_legend(reversed = T, itemStyle = list(color = "#FFFF")) %>%
+       hc_series(list(data = sun$sum_goals,
+                      name = "FPL Form")) 
+    
+ })
+ 
+gk <- reactive({
+   req(input$PickGK)
+   
+   fpl_shots <- fpl_shots %>% 
+      dplyr::filter(player %in% input$PickGK) 
+   
+   unique_player <- unique(fpl_shots$photo)
+   
+   unique_player <- paste0("Data_Input/photos/", unique_player)
+   
+    gk <- data.frame(
+       x = 0.9,
+       y = 0.5) %>% 
+       mutate(
+          image = unique_player)
+    
+    return(gk)
+ })
+ 
+ 
+df1 <- reactive({
+   req(input$PickDF[1])
+   
+   fpl_shots <- fpl_shots %>% 
+      dplyr::filter(player %in% input$PickDF[1]) 
+   
+   unique_player <- unique(fpl_shots$photo)
+   
+   unique_player <- paste0("Data_Input/photos/", unique_player)
+   
+   df1 <- data.frame(
+      x = 0.8,
+      y = 0.2) %>% 
+      mutate(
+         image = unique_player)
+})
+
+df2 <- reactive({
+   req(input$PickDF[2])
+   
+   fpl_shots <- fpl_shots %>% 
+      dplyr::filter(player %in% input$PickDF[2]) 
+   
+   unique_player <- unique(fpl_shots$photo)
+   
+   unique_player <- paste0("Data_Input/photos/", unique_player)
+   df2 <- data.frame(
+      x = 0.8,
+      y = 0.5) %>% 
+      mutate(
+         image = unique_player)
+})
+
+df3 <- reactive({
+   req(input$PickDF[3])
+   
+   fpl_shots <- fpl_shots %>% 
+      dplyr::filter(player %in% input$PickDF[3]) 
+   
+   unique_player <- unique(fpl_shots$photo)
+   
+   unique_player <- paste0("Data_Input/photos/", unique_player)
+   
+   df3 <- data.frame(
+      x = 0.8,
+      y = 0.8) %>% 
+      mutate(
+         image = unique_player)
+})
+
+mf1 <- reactive({
+   req(input$PickMid[1])
+   
+   fpl_shots <- fpl_shots %>% 
+      dplyr::filter(player %in% input$PickMid[1]) 
+   
+   unique_player <- unique(fpl_shots$photo)
+   
+   unique_player <- paste0("Data_Input/photos/", unique_player)
+   mf1 <- data.frame(
+      x = 0.71,
+      y = 0.1) %>% 
+      mutate(
+         image = unique_player)
+})
+
+mf2 <- reactive({
+   req(input$PickMid[2])
+   
+   fpl_shots <- fpl_shots %>% 
+      dplyr::filter(player %in% input$PickMid[2]) 
+   
+   unique_player <- unique(fpl_shots$photo)
+   
+   unique_player <- paste0("Data_Input/photos/", unique_player)
+   mf2 <- data.frame(
+      x = 0.71,
+      y = 0.36) %>% 
+      mutate(
+         image = unique_player)
+})
+
+mf3 <- reactive({
+   req(input$PickMid[3])
+   
+   fpl_shots <- fpl_shots %>% 
+      dplyr::filter(player %in% input$PickMid[3]) 
+   
+   unique_player <- unique(fpl_shots$photo)
+   
+   unique_player <- paste0("Data_Input/photos/", unique_player)
+   mf3 <- data.frame(
+      x = 0.71,
+      y =0.62) %>% 
+      mutate(
+         image = unique_player)
+})
+
+mf4 <- reactive({
+   req(input$PickMid[4])
+   
+   fpl_shots <- fpl_shots %>% 
+      dplyr::filter(player %in% input$PickMid[4]) 
+   
+   unique_player <- unique(fpl_shots$photo)
+   
+   unique_player <- paste0("Data_Input/photos/", unique_player)
+   
+   mf4 <- data.frame(
+      x = 0.71,
+      y = 0.9) %>% 
+      mutate(
+         image = unique_player)
+})
+
+fw1 <- reactive({
+   req(input$PickFor[1])
+   
+   fpl_shots <- fpl_shots %>% 
+      dplyr::filter(player %in% input$PickFor[1]) 
+   
+   unique_player <- unique(fpl_shots$photo)
+   
+   unique_player <- paste0("Data_Input/photos/", unique_player)
+   fw1 <- data.frame(
+      x = 0.6,
+      y = 0.2) %>% 
+      mutate(
+         image = unique_player)
+})
+
+fw2 <- reactive({
+   req(input$PickFor[2])
+   
+   fpl_shots <- fpl_shots %>% 
+      dplyr::filter(player %in% input$PickFor[2]) 
+   
+   unique_player <- unique(fpl_shots$photo)
+   
+   unique_player <- paste0("Data_Input/photos/", unique_player)
+   fw2 <- data.frame(
+      x = 0.6,
+      y = 0.5) %>% 
+      mutate(
+         image = unique_player)
+})
+
+fw3 <- reactive({
+   req(input$PickFor[3])
+   
+   fpl_shots <- fpl_shots %>% 
+      dplyr::filter(player %in% input$PickFor[3]) 
+   
+   unique_player <- unique(fpl_shots$photo)
+   
+   unique_player <- paste0("Data_Input/photos/", unique_player)
+   fw3<- data.frame(
+      x = 0.6,
+      y = 0.8) %>% 
+      mutate(
+         image = unique_player)
+})
+
+player_label <- reactive({
+   player_label <- data.frame(
+      x = c(0.89,0.75,0.75,0.75,0.62,0.62,0.62,0.62,0.49,0.49,0.49), 
+      y = c(0.5,0.2,0.5,0.8,0.1,0.36,0.62,0.9,0.2,0.5,0.8),
+      label = c(input$PickGK,input$PickDF[1],input$PickDF[2],input$PickDF[3],
+                input$PickMid[1], input$PickMid[2],input$PickMid[3],input$PickMid[4],
+                input$PickFor[1],input$PickFor[2],input$PickFor[3]))
+})
+
+opponent_label <- reactive({
+   
+   table_opponent <- fpl_data_pred %>%
+      mutate(was_home = ifelse(was_home == "True", "(H)","(A)"),
+             opponent = paste0(opponent," ", was_home)) %>%  
+      dplyr::filter(round %in% c(20:24)) %>% 
+      dplyr::filter(player %in% c(input$PickGK,input$PickDF, input$PickMid, input$PickFor)) %>% 
+      dplyr::select(position, player, club, value, round, opponent) %>% 
+      dplyr::mutate(
+         opponent = ifelse(round == 24 & (club == "LIV"), "WOL (A), WHU (A)", ifelse(round == 24 & (club == "WHU"), "LEI (A), LIV (H)", opponent))) %>% 
+      unique() %>% 
+      mutate(round = paste0("GW ",round)) %>% 
+      spread(round, opponent)
+   
+})
+
+output$player_pitch <- renderPlot({
+   createPitch(10600, 6500, "#3B7A57", "#FFFFFF", "#2D3741", "#808080") +
+      coord_flip(xlim = c(5400, 10685),
+                 ylim = c(0, 7040)) +
+      geom_image(                       # World Cup logo
+         data = gk(),     
+         aes(x = x*11500, y = (y*10000*0.65),
+             image = image), size = 0.1) +
+      geom_label(
+         data = player_label(), 
+         aes(x = x*11000, y = (y*10000*0.65),
+             label = label),  fontface = "bold",
+         show.legend = FALSE) +
+      geom_image(                       # World Cup logo
+         data = df1(),     
+         aes(x = x*11200, y = (y*10000*0.65),
+             image = image), size = 0.12) +
+      geom_image(                       # World Cup logo
+         data = df2(),     
+         aes(x = x*11200, y = (y*10000*0.65),
+             image = image), size = 0.12) +
+      geom_image(                       # World Cup logo
+         data = df3(),     
+         aes(x = x*11200, y = (y*10000*0.65),
+             image = image), size = 0.12) +
+      geom_image(                       # World Cup logo
+         data = mf1(),     
+         aes(x = x*10500, y = (y*10000*0.65),
+             image = image), size = 0.12) +
+      geom_image(                       # World Cup logo
+         data = mf2(),     
+         aes(x = x*10500, y = (y*10000*0.65),
+             image = image), size = 0.12) +
+      geom_image(                       # World Cup logo
+         data = mf3(),     
+         aes(x = x*10500, y = (y*10000*0.65),
+             image = image), size = 0.12) +
+      geom_image(                       # World Cup logo
+         data = mf4(),     
+         aes(x = x*10500, y = (y*10000*0.65),
+             image = image), size = 0.12) +
+      geom_image(                       # World Cup logo
+         data = fw1(),     
+         aes(x = x*10000, y = (y*10000*0.65),
+             image = image), size = 0.12) +
+      geom_image(                       # World Cup logo
+         data = fw2(),     
+         aes(x = x*10000, y = (y*10000*0.65),
+             image = image), size = 0.12) +
+      geom_image(                       # World Cup logo
+         data = fw3(),     
+         aes(x = x*10000, y = (y*10000*0.65),
+             image = image), size = 0.12)
+})
+
+ observeEvent(input$reset_input, {
+    shinyjs::reset("form")
+ })
+ 
+ data <- reactive({ fpl_data_pred <-  fpl_data_pred   %>% 
+    mutate(position = ifelse(fpl_data_pred$position == "GK", "Goalkeeper", ifelse(fpl_data_pred$position == "CB", "Defender",ifelse(fpl_data_pred$position == "FB", "Defender", ifelse(fpl_data_pred$position == "DM", "Midfielder", ifelse(fpl_data_pred$position == "AM", "Midfielder", ifelse(fpl_data_pred$position == "ST",  "Forward", "Sub")))))),
+           position = as.factor(position)) %>% 
+    mutate(value = value/10)
+ 
+ fpl_data_pred$position <- factor(fpl_data_pred$position, ordered = T, c("Goalkeeper", "Defender", "Midfielder","Forward"))
+ 
+ 
+ table_points <- aggregate(pred_total_points ~ position + player + club + value + round, fpl_data_pred %>%
+                              filter(round %in% c(20:24)), FUN = "sum")
+ 
+ table_opponent <- fpl_data_pred %>%
+    mutate(was_home = ifelse(was_home == "True", "(H)","(A)"),
+           opponent = paste0(opponent," ", was_home)) %>%  
+    dplyr::filter(round %in% c(20:24)) %>% 
+    dplyr::filter(player %in% c(input$PickGK,input$PickDF, input$PickMid, input$PickFor)) %>% 
+    dplyr::select(position, player, club, value, round, opponent) %>% 
+    dplyr::mutate(
+       opponent = ifelse(round == 24 & (club == "LIV"), "WOL (A), WHU (A)", ifelse(round == 24 & (club == "WHU"), "LEI (A), LIV (H)", opponent))) %>% 
+    unique() %>% 
+    mutate(round = paste0("GW ",round)) %>% 
+    spread(round, opponent)
+ 
+ table <- right_join(table_opponent, table_points)
+ 
+ table <- table %>%
+    mutate(
+       Position = cell_spec(position, "html", background = sapply(table$club, bg.picker), color = "white"),
+       Player = cell_spec(player, "html", background = sapply(table$club, bg.picker), color = "white"),
+       Club = cell_spec(club, "html", background = sapply(table$club, bg.picker), color = "white"),
+       Value = color_bar(sapply(table$club, bg.picker))(value),
+       `GW 20` = cell_spec(`GW 20`, "html", background = bg.picker2(`Points 20`, max1), color = "black", tooltip = paste0("Predicted Point: ",`Points 20`)),
+       `GW 21` = cell_spec(`GW 21`, "html", background = bg.picker2(`Points 21`, max2), color = "black", tooltip = paste0("Predicted Point: ",`Points 21`)),
+       `GW 22` = cell_spec(`GW 22`, "html", background = bg.picker2(`Points 22`, max3), color = "black", tooltip = paste0("Predicted Point: ",`Points 22`)),
+       `GW 23` = cell_spec(`GW 23`, "html", background = bg.picker2(`Points 23`, max4), color = "black", tooltip = paste0("Predicted Point: ",`Points 23`)),
+       `GW 24` = cell_spec(`GW 24`, "html", background = bg.picker2(`Points 24`, max5), color = "black", tooltip = paste0("Predicted Point: ",`Points 24`)),
+       Total = color_bar("#ff7f7f")(Total)
+    ) %>%
+    dplyr::select(Position, Player, Club, Value,`GW 20`, `GW 21`, `GW 22`, `GW 23`, `GW 24`, Total) %>%
+    kable("html", escape = F,align = c("c", "c", "c", "r", "c", "c", "c","c" , "c", "r")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F) %>%
+    column_spec(1:10, bold = T, color = "white", background = "#34404b") %>% 
+    column_spec(5:9, width = "2cm") %>% 
+    column_spec(2, width = "5cm") %>% 
+    column_spec(4, width = "3cm") %>% 
+    column_spec(10, width = "3cm") %>% 
+    row_spec(0, bold = T, color = "white", background = "#34404b")
+ 
+ return(table)
+    
+ })
+ 
+ 
+data_table2 <- reactive({ 
+   
+   fpl_data_pred <-  fpl_data_pred   %>% 
+      mutate(position = ifelse(fpl_data_pred$position == "GK", "Goalkeeper", ifelse(fpl_data_pred$position == "CB", "Defender",ifelse(fpl_data_pred$position == "FB", "Defender", ifelse(fpl_data_pred$position == "DM", "Midfielder", ifelse(fpl_data_pred$position == "AM", "Midfielder", ifelse(fpl_data_pred$position == "ST",  "Forward", "Sub")))))),
+             position = as.factor(position)) %>% 
+      mutate(value = value/10)
+   
+   fpl_data_pred$position <- factor(fpl_data_pred$position, ordered = T, c("Goalkeeper", "Defender", "Midfielder","Forward"))
+   
+   
+   table_points <- aggregate(pred_total_points ~ position + player + club + value + round, fpl_data_pred %>%
+                                filter(round %in% c(20:24)), FUN = "sum")
+   table <- table_points %>% 
+      dplyr::filter(player %in% c(input$PickGK,input$PickDF, input$PickMid, input$PickFor)) %>% 
+      mutate(round = paste0("GW ",round),
+             pred_total_points = round(pred_total_points,2)) %>%
+      spread(round, pred_total_points) %>% 
+      mutate(Total = .[[5]] + .[[6]] + .[[7]] + .[[8]] + .[[9]]) 
+   
+table %>%
+   mutate(
+      Position = cell_spec(position, "html", background = sapply(table$club, bg.picker), color = "white"),
+      Player = cell_spec(player, "html", background = sapply(table$club, bg.picker), color = "white"),
+      Club = cell_spec(club, "html", background = sapply(table$club, bg.picker), color = "white"),
+      Value = color_bar(sapply(table$club, bg.picker))(value),
+      `GW 20` = color_tile("#eddf1c", "#fc0303")(`GW 20`),
+      `GW 21` = color_tile("#eddf1c", "#fc0303")(`GW 21`),
+      `GW 22` = color_tile("#eddf1c", "#fc0303")(`GW 22`),
+      `GW 23` = color_tile("#eddf1c", "#fc0303")(`GW 23`),
+      `GW 24` = color_tile("#eddf1c", "#fc0303")(`GW 24`),
+      Total = color_bar("#ff7f7f")(Total)
+   ) %>%
+   dplyr::select(Position, Player, Club, Value,`GW 20`, `GW 21`, `GW 22`, `GW 23`, `GW 24`, Total) %>%
+   kable("html", escape = F,align = c("c", "c", "c", "r", "c", "c", "c","c" , "c", "r")) %>%
+   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F) %>%
+   column_spec(1:10, bold = T, color = "white", background = "#34404b") %>% 
+   column_spec(5:9, width = "2cm") %>% 
+   column_spec(2, width = "5cm") %>% 
+   column_spec(4, width = "3cm") %>% 
+   column_spec(10, width = "3cm") %>% 
+   row_spec(0, bold = T, color = "white", background = "#34404b")
+   
+})
+ 
+data_table1 <- reactive({
+   fpl_data_pred <-  fpl_data_pred   %>% 
+      mutate(position = ifelse(fpl_data_pred$position == "GK", "Goalkeeper", ifelse(fpl_data_pred$position == "CB", "Defender",ifelse(fpl_data_pred$position == "FB", "Defender", ifelse(fpl_data_pred$position == "DM", "Midfielder", ifelse(fpl_data_pred$position == "AM", "Midfielder", ifelse(fpl_data_pred$position == "ST",  "Forward", NA)))))),
+             position = as.factor(position)) %>% 
+      mutate(value = value/10)
+   
+   fpl_data_pred$position <- factor(fpl_data_pred$position, ordered = T, c("Goalkeeper", "Defender", "Midfielder","Forward"))
+   
+   table_points <- aggregate(pred_total_points ~ position + player + club + value + round, fpl_data_pred %>%
+                                filter(round %in% c(20:24)), FUN = "sum")
+   
+   table_points <- table_points %>% 
+      dplyr::filter(player %in% c(input$PickGK,input$PickDF, input$PickMid, input$PickFor)) %>% 
+      mutate(round = paste0("Points ",round),
+             pred_total_points = round(pred_total_points,2)) %>%
+      spread(round, pred_total_points) %>% 
+      mutate(Total = .[[5]] + .[[6]] + .[[7]] + .[[8]] + .[[9]]) 
+   
+   table_opponent <- fpl_data_pred %>%
+      mutate(was_home = ifelse(was_home == "True", "(H)","(A)"),
+             opponent = paste0(opponent," ", was_home)) %>%  
+      dplyr::filter(round %in% c(20:24)) %>% 
+      dplyr::filter(player %in% c(input$PickGK,input$PickDF, input$PickMid, input$PickFor)) %>% 
+      dplyr::select(position, player, club, value, round, opponent) %>% 
+      dplyr::mutate(
+         opponent = ifelse(round == 24 & (club == "LIV"), "WOL (A), WHU (A)", ifelse(round == 24 & (club == "WHU"), "LEI (A), LIV (H)", opponent))) %>% 
+      unique() %>% 
+      mutate(round = paste0("GW ",round)) %>% 
+      spread(round, opponent)
+   
+   table <- right_join(table_opponent, table_points)
+   
+   max1 <- max(table$`Points 20`)
+   max2 <- max(table$`Points 21`)
+   max3 <- max(table$`Points 22`)
+   max4 <- max(table$`Points 23`)
+   max5 <- max(table$`Points 24`)
+   
+   min1_1 <- sort(table$`Points 20`)[1]
+   min1_2 <- sort(table$`Points 20`)[2]
+   min1_3 <- sort(table$`Points 20`)[3]
+   min2_1 <- sort(table$`Points 21`)[1]
+   min2_2 <- sort(table$`Points 21`)[2]
+   min2_3 <- sort(table$`Points 21`)[3]
+   min3_1 <- sort(table$`Points 22`)[1]
+   min3_2 <- sort(table$`Points 22`)[2]
+   min3_3 <- sort(table$`Points 22`)[3]
+   min4_1 <- sort(table$`Points 23`)[1]
+   min4_2 <- sort(table$`Points 23`)[2]
+   min4_3 <- sort(table$`Points 23`)[3]
+   min5_1 <- sort(table$`Points 24`)[1]
+   min5_2 <- sort(table$`Points 24`)[2]
+   min5_3 <- sort(table$`Points 24`)[3]
+   
+  table %>%
+      mutate(
+         Position = cell_spec(position, "html", background = sapply(table$club, bg.picker), color = "white"),
+         Player = cell_spec(player, "html", background = sapply(table$club, bg.picker), color = "white"),
+         Club = cell_spec(club, "html", background = sapply(table$club, bg.picker), color = "white"),
+         Value = color_bar(sapply(table$club, bg.picker))(value),
+         `GW 20` = cell_spec(`GW 20`, "html", background = bg.picker2(`Points 20`, max1), color = "black", tooltip = paste0("Predicted Point: ",`Points 20`)),
+         `GW 21` = cell_spec(`GW 21`, "html", background = bg.picker2(`Points 21`, max2), color = "black", tooltip = paste0("Predicted Point: ",`Points 21`)),
+         `GW 22` = cell_spec(`GW 22`, "html", background = bg.picker2(`Points 22`, max3), color = "black", tooltip = paste0("Predicted Point: ",`Points 22`)),
+         `GW 23` = cell_spec(`GW 23`, "html", background = bg.picker2(`Points 23`, max4), color = "black", tooltip = paste0("Predicted Point: ",`Points 23`)),
+         `GW 24` = cell_spec(`GW 24`, "html", background = bg.picker2(`Points 24`, max5), color = "black", tooltip = paste0("Predicted Point: ",`Points 24`)),
+         Total = color_bar("#ff7f7f")(Total)
+      ) %>%
+      dplyr::select(Position, Player, Club, Value,`GW 20`, `GW 21`, `GW 22`, `GW 23`, `GW 24`, Total) %>%
+      kable("html", escape = F,align = c("c", "c", "c", "r", "c", "c", "c","c" , "c", "r")) %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F) %>%
+      column_spec(1:10, bold = T, color = "white", background = "#34404b") %>% 
+      column_spec(5:9, width = "2cm") %>% 
+      column_spec(2, width = "5cm") %>% 
+      column_spec(4, width = "3cm") %>% 
+      column_spec(10, width = "3cm") %>% 
+      row_spec(0, bold = T, color = "white", background = "#34404b")
+   
+   
+   
+})
+
+output$titletable <- renderText({"Gameweek Squad"})
+
+output$table_points <- renderText({
+   if(input$switch %% 2 == 1){
+      data_table1()}
+   else{data_table2()}
+}) 
+
+
+points_table2 <- reactive({
+   fpl_data_pred <-  fpl_data_pred   %>% 
+      mutate(position = ifelse(fpl_data_pred$position == "GK", "Goalkeeper", ifelse(fpl_data_pred$position == "CB", "Defender",ifelse(fpl_data_pred$position == "FB", "Defender", ifelse(fpl_data_pred$position == "DM", "Midfielder", ifelse(fpl_data_pred$position == "AM", "Midfielder", ifelse(fpl_data_pred$position == "ST",  "Forward", NA)))))),
+             position = as.factor(position)) %>% 
+      mutate(value = value/10)
+   
+   fpl_data_pred$position <- factor(fpl_data_pred$position, ordered = T, c("Goalkeeper", "Defender", "Midfielder","Forward"))
+   
+   table_points <- aggregate(pred_total_points ~ position + player + club + value + round, fpl_data_pred %>%
+                                filter(round %in% c(20:24)), FUN = "sum")
+   
+   table_points <- table_points %>% 
+      mutate(round = paste0("Points ",round),
+             pred_total_points = round(pred_total_points,2)) %>%
+      spread(round, pred_total_points) %>% 
+      mutate(Total = .[[5]] + .[[6]] + .[[7]] + .[[8]] + .[[9]]) 
+   
+   table_opponent <- fpl_data_pred %>%
+      mutate(was_home = ifelse(was_home == "True", "(H)","(A)"),
+             opponent = paste0(opponent," ", was_home)) %>%  
+      dplyr::filter(round %in% c(20:24)) %>% 
+      dplyr::select(position, player, club, value, round, opponent) %>% 
+      dplyr::mutate(
+         opponent = ifelse(round == 24 & (club == "LIV"), "WOL (A), WHU (A)", ifelse(round == 24 & (club == "WHU"), "LEI (A), LIV (H)", opponent))) %>% 
+      unique() %>% 
+      mutate(round = paste0("GW ",round)) %>% 
+      spread(round, opponent)
+   
+   table <- right_join(table_opponent, table_points) %>% 
+      arrange(- Total) %>% 
+   head()
+   
+}) 
+
+output$table_points2 <- renderText({
+   
+   table_points <- points_table2()
+   
+   table_points %>%
+      mutate(
+         Position = cell_spec(position, "html", background = sapply(table_points$club, bg.picker), color = "white"),
+         Player = cell_spec(player, "html", background = sapply(table_points$club, bg.picker), color = "white"),
+         Club = cell_spec(club, "html", background = sapply(table_points$club, bg.picker), color = "white"),
+         Value = color_bar(sapply(table_points$club, bg.picker))(value),
+         `GW 20` = color_tile("#eddf1c", "#fc0303")(`Points 20`),
+         `GW 21` = color_tile("#eddf1c", "#fc0303")(`Points 21`),
+         `GW 22` = color_tile("#eddf1c", "#fc0303")(`Points 22`),
+         `GW 23` = color_tile("#eddf1c", "#fc0303")(`Points 23`),
+         `GW 24` = color_tile("#eddf1c", "#fc0303")(`Points 24`),
+         Total = color_bar("#ff7f7f")(Total)
+      ) %>%
+      dplyr::select(Position, Player, Club, Value,`GW 20`, `GW 21`, `GW 22`, `GW 23`, `GW 24`, Total) %>%
+      kable("html", escape = F,align = c("c", "c", "c", "r", "c", "c", "c","c" , "c", "r")) %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F) %>%
+      column_spec(1:10, bold = T, color = "white", background = "#34404b") %>% 
+      column_spec(5:9, width = "2cm") %>% 
+      column_spec(2, width = "5cm") %>% 
+      column_spec(4, width = "3cm") %>% 
+      column_spec(10, width = "3cm") %>% 
+      row_spec(0, bold = T, color = "white", background = "#34404b")
+})
+
+tabledata <- reactive({
+   fpl_data_pred <-  fpl_data_pred   %>% 
+      mutate(position = ifelse(fpl_data_pred$position == "GK", "Goalkeeper", ifelse(fpl_data_pred$position == "CB", "Defender",ifelse(fpl_data_pred$position == "FB", "Defender", ifelse(fpl_data_pred$position == "DM", "Midfielder", ifelse(fpl_data_pred$position == "AM", "Midfielder", ifelse(fpl_data_pred$position == "ST",  "Forward", "Sub")))))),
+             position = as.factor(position)) %>% 
+      mutate(value = value/10)
+   
+   fpl_data_pred$position <- factor(fpl_data_pred$position, ordered = T, c("Goalkeeper", "Defender", "Midfielder","Forward"))
+   
+   
+   table_points <- aggregate(pred_total_points ~ position + player + club + value + round, fpl_data_pred %>%
+                                filter(round %in% c(20:24)), FUN = "sum")
+   table <- table_points %>% 
+      dplyr::filter(player %in% c(input$PickGK,input$PickDF, input$PickMid, input$PickFor)) %>% 
+      mutate(round = paste0("GW ",round),
+             pred_total_points = round(pred_total_points,2)) %>%
+      spread(round, pred_total_points) %>% 
+      mutate(Total = .[[5]] + .[[6]] + .[[7]] + .[[8]] + .[[9]]) 
+
+   return(table)
+   
+})
+
+points_gw <- reactive({
+   
+   table <- tabledata()
+   
+   ave <- data.frame(Points = c(sum(table[5]) + max(table[5]), sum(table[6]) + max(table[6]),sum(table[7]) + max(table[7]),sum(table[8]) + max(table[8]),sum(table[9]) + max(table[9])),
+                     GW = c(names(table[5]),names(table[6]),names(table[7]),names(table[8]),names(table[9]))
+   )
+})
+
+
+
+output$highest <- renderValueBox({
+   
+   ave <- points_gw()
+   
+   max <- max(ave$Points)
+   
+   gw <- ave[which.max(ave$Points),"GW"]
+   
+   valueBox(value = tags$p(paste0(max, " (", gw,")"), style = "font-size: 80%;"),
+       "Highest Points in The Next 5 Gameweeks",
+      color = "yellow",icon = icon("angle-double-up")
+   )
+
+})
+
+output$lowest <- renderValueBox({
+   
+   ave <- points_gw()
+   
+   min <- min(ave$Points)
+   
+   gw <- ave[which.min(ave$Points),"GW"]
+   
+   valueBox(
+     value = tags$p(paste0(min, " (", gw,")"), style = "font-size: 80%;"),
+     "Lowest Points in The Next 5 Gameweeks",
+     color = "red",icon = icon("angle-double-down"))
+   
+})
+
+average_points <- reactive({
+   table <- tabledata()
+   
+   ave <- (sum(table$Total) + max(table$'GW 20') + max(table$'GW 21') + max(table$'GW 22') + max(table$'GW 23') + max(table$'GW 24'))/5
+})
+   
+output$average <- renderValueBox({
+   ave <- average_points()
+   
+   valueBox(
+     tags$p(paste0(ave), style = "font-size: 80%;"), "Average Points Per Gameweek", icon = icon("th-list"),
+      color = "blue"
+   )
+})
+
+output$teamvalue <- renderValueBox({
+   
+   table <- tabledata()
+   
+   ave <- sum(table$value)
+   
+   valueBox(
+      value = HTML(paste0("&#0163;",ave)), "Team Value",
+      color = "green",icon = icon("money")
+   )
+})
+
+output$gwpoints <- renderHighchart({
+   
+   fpl_data_pred2 <-  fpl_data_pred   %>% 
+      mutate(position = ifelse(fpl_data_pred$position == "GK", "Goalkeeper", ifelse(fpl_data_pred$position == "CB", "Defender",ifelse(fpl_data_pred$position == "FB", "Defender", ifelse(fpl_data_pred$position == "DM", "Midfielder", ifelse(fpl_data_pred$position == "AM", "Midfielder", ifelse(fpl_data_pred$position == "ST",  "Forward", "Sub")))))),
+             position = as.factor(position)) %>% 
+      mutate(value = value/10)
+   
+   fpl_data_pred2$position <- factor(fpl_data_pred2$position, ordered = T, c("Goalkeeper", "Defender", "Midfielder","Forward"))
+   
+   
+   table_points <- aggregate(pred_total_points ~ position + player + club + value + round, fpl_data_pred2 %>%
+                                filter(round %in% c(20:24)), FUN = "sum")
+   table <- table_points %>% 
+      dplyr::filter(player %in% c(input$PickGK,input$PickDF, input$PickMid, input$PickFor)) %>% 
+      mutate(round = paste0("GW ",round),
+             pred_total_points = round(pred_total_points,2)) %>%
+      spread(round, pred_total_points) %>% 
+      mutate(Total = .[[5]] + .[[6]] + .[[7]] + .[[8]] + .[[9]]) 
+   
+   data <- data.frame(Points = c(sum(table[[5]]) + max(table[5]), sum(table[[6]]) + max(table[6]) ,sum(table[[7]]) + max(table[7]) ,sum(table[[8]]) + max(table[8]),sum(table[[9]]) + max(table[9])),
+                      GW = c(names(table[5]), names(table[6]),names(table[7]),names(table[8]),names(table[9])))
+   
+   
+   highchart() %>%
+      hc_title(text = "General Stats by Minutes Ratio", style = list(color = "#FFFF", fontSize = "15px", fontFamily = 'monospace')) %>% 
+      hc_chart(backgroundColor = '#2D3741') %>% 
+      hc_add_series(data$Points,showInLegend = F,
+                    type = "column") %>%
+      hc_xAxis(list(categories=data$GW,reversed=FALSE,labels=list(step= 1,style = list(color = "#FFFF")))) %>%
+      hc_yAxis(
+         labels = list(style = list(color = "#FFFF"),
+                       formatter = JS("function(){return Math.abs(this.value);}")
+         ))  %>% 
+      hc_plotOptions(column = list(colorByPoint = T)) %>% 
+      hc_tooltip(
+         shared = FALSE,
+         formatter = JS("function () {
+            return this.point.category + '<br/>' + 
+            '</b> ' + 
+            Highcharts.numberFormat(Math.abs(this.point.y), 1);}")
+      )  %>% 
+      hc_legend(showInLegend = F) 
+})
+
+output$playerpoints <- renderHighchart({
+   
+   fpl_data_pred2 <-  fpl_data_pred   %>% 
+      mutate(position = ifelse(fpl_data_pred$position == "GK", "Goalkeeper", ifelse(fpl_data_pred$position == "CB", "Defender",ifelse(fpl_data_pred$position == "FB", "Defender", ifelse(fpl_data_pred$position == "DM", "Midfielder", ifelse(fpl_data_pred$position == "AM", "Midfielder", ifelse(fpl_data_pred$position == "ST",  "Forward", "Sub")))))),
+             position = as.factor(position)) %>% 
+      mutate(value = value/10)
+   
+   fpl_data_pred2$position <- factor(fpl_data_pred2$position, ordered = T, c("Goalkeeper", "Defender", "Midfielder","Forward"))
+   
+   
+   table_points <- aggregate(pred_total_points ~ position + player + club + value + round, fpl_data_pred2 %>%
+                                filter(round %in% c(20:24)), FUN = "sum")
+   table <- table_points %>% 
+      dplyr::filter(player %in% c(input$PickGK,input$PickDF, input$PickMid, input$PickFor)) %>% 
+      mutate(round = paste0("GW ",round),
+             pred_total_points = round(pred_total_points,2)) %>% 
+      arrange(player)
+   
+   table1 <- table %>% 
+      dplyr::filter(player %in% input$PickGK)
+   table2 <- table %>% 
+      dplyr::filter(player %in% input$PickDF[1])
+   table3 <- table %>% 
+      filter(player %in% input$PickDF[2])
+   table4 <- table %>% 
+      filter(player %in% input$PickDF[3])
+   table5 <- table %>% 
+      filter(player %in%input$PickMid[1])
+   table6 <- table %>% 
+      filter(player %in%input$PickMid[2])
+   table7 <- table %>% 
+      filter(player %in% input$PickMid[3])
+   table8 <- table %>% 
+      filter(player %in% input$PickMid[4])
+   table9 <- table %>% 
+      filter(player %in% input$PickFor[1])
+   table10 <- table %>% 
+      filter(player %in% input$PickFor[2])
+   table11 <- table %>% 
+      filter(player %in% input$PickFor[3])
+
+   
+   
+      highchart() %>%
+      hc_title(text = "Your Team Performance", style = list(color = "#FFFF", fontSize = "15px", fontFamily = 'monospace')) %>% 
+      hc_chart(backgroundColor = '#2D3741', type ="bar") %>% 
+      hc_xAxis(list(categories=unique(table$round),reversed=FALSE,labels=list(step= 1,style = list(color = "#FFFF")), type = "category")) %>%
+      hc_yAxis(
+         labels = list(style = list(color = "#FFFF"),
+                       formatter = JS("function(){return Math.abs(this.value);}")
+         ))  %>% 
+      hc_plotOptions(series = list(stacking = "normal")) %>% 
+      hc_tooltip(
+         shared = FALSE,
+         formatter = JS("function () {
+            return this.point.category + '<br/>' + this.series.name + ': ' +
+            '</b> ' + 
+            Highcharts.numberFormat(Math.abs(this.point.y), 1);}")
+      )  %>% 
+         hc_series( 
+            list(data = table10$pred_total_points,
+                 name = input$PickFor[3]),
+            list(data = table9$pred_total_points,
+                 name = input$PickFor[2]),
+            list(data = table9$pred_total_points,
+                 name = input$PickFor[1]),
+            list(data = table8$pred_total_points,
+                 name = input$PickMid[4]),
+            list(data =table7$pred_total_points,
+                 name = input$PickMid[3]),
+            list(data = table6$pred_total_points,
+                 name = input$PickMid[2]),
+            list(data = table5$pred_total_points,
+                 name = input$PickMid[1]),
+            list(data = table4$pred_total_points,
+                 name = input$PickDF[3]),   
+            list(data = table3$pred_total_points,
+                 name = input$PickDF[2]),
+            list(data = table2$pred_total_points,
+                 name = input$PickDF[1]),
+            list(data = table1$pred_total_points,
+                 name = input$PickGK)
+         )   %>%   
+         hc_legend(reversed = T, itemStyle = list(color = "#FFFF")) 
+   
+   
+})
+
+
+output$card_transferout <- renderUI({
+  HTML(
+    paste0(
+      '<div class="card2">
+      <div class="container">
+              <h4><b>"Diego Rico"</b></h4>
+              </div>
+              <img src="', img, '" style="width:100%">
+              <div class="container">
+              <h5><i>', store, '</i></h5>
+              </div>
+              </div>'
+    )
+  )
+})
+
+output$card_transferin <- renderUI({
+  HTML(
+    paste0(
+      '     
+      <div class="card2">
+        <i class="fas fa-chart-bar"style="font-size: 30px";></i>
+              <h3><b> Pre-Gameweek Analysis </b></h3>
+              <h4><i> Which players you must to acquire in the upcoming gameweek? This page will show you the most in-form players based on your desired attributes! </i></h4>
+              </div>'
+    )
+  )
+})
+}

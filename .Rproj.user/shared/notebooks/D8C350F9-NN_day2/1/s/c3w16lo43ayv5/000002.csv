@@ -1,0 +1,3 @@
+"0","#untuk mengenerate dataframe baru yang setiap barisnya berbeda "
+"0","dat <- data.frame(expand.grid(c(0,1),c(0,1),c(1,2)))"
+"0","dat"

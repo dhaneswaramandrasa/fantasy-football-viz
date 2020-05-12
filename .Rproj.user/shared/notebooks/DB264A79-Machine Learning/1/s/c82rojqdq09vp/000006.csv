@@ -1,0 +1,8 @@
+"0","datatable(table) %>% "
+"0","formatStyle("
+"0","        columns = 10:14,"
+"0","           color = ""white"","
+"0","    backgroundColor = styleInterval(c(0,7), c('gray', 'yellow')))"
+"2","Error in styleInterval(c(0, 7), c(""gray"", ""yellow"")) : 
+  length(cuts) must be equal to length(values) - 1
+"

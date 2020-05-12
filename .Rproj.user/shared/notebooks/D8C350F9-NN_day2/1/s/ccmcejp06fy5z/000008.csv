@@ -1,0 +1,4 @@
+"0","class_nn <- neuralnet(y~ Var1+Var2+Var3, dat, hidden = 8, rep = 5, act.fct= ""logistic"", linear.output = F, err.fct = ""ce"")
+"
+"2","Error: Error function 'ce' only implemented for binary response.
+"

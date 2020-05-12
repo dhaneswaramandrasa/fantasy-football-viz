@@ -1,0 +1,10 @@
+"0","model %>% "
+"0","  layer_dense(units = 64, input_shape = ncol(train_x_keras), activation = ""linear"", name = ""1"") %>% "
+"0","  layer_dense(units = 32, activation = ""linear"", name = ""2"") %>% "
+"0","  layer_dense(units = 16, activation = ""linear"", name = ""3"") %>% "
+"0","  layer_dense(units = 1, activation = ""linear"", name = ""output"")"
+"2","2020-02-21 21:22:14.802630: I tensorflow/core/platform/cpu_feature_guard.cc:142] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+"
+"2","2020-02-21 21:22:14.852323: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x7f9710857330 executing computations on platform Host. Devices:
+2020-02-21 21:22:14.852343: I tensorflow/compiler/xla/service/service.cc:175]   StreamExecutor device (0): Host, Default Version
+"

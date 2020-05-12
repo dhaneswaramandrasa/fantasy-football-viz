@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1577624412487.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "371501580",
+    "id" : "39E5B89F",
+    "lastKnownWriteTime" : 1578687521,
+    "last_content_update" : 1580109166788,
+    "path" : "~/Documents/Algoritma Data Science/DCD_FPL/Data_Preparation_2019_2020.Rmd",
+    "project_path" : "Data_Preparation_2019_2020.Rmd",
+    "properties" : {
+        "cursorPosition" : "155,0",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

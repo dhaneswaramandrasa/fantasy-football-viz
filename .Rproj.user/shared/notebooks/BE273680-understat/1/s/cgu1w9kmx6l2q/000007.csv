@@ -1,0 +1,6 @@
+"0","write.csv(understat_matches, ""understat_matches_2019/2020.csv"")
+"
+"2","cannot open file 'understat_matches_2019/2020.csv': No such file or directory"
+"2","Error in file(file, ifelse(append, ""a"", ""w"")) : 
+  cannot open the connection
+"

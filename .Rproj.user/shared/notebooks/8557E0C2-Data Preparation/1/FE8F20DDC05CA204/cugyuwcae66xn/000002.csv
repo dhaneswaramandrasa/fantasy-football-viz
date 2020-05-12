@@ -1,0 +1,3 @@
+"0","fpl <- fpl %>% "
+"0","  mutate(point_att = ifelse(fpl$was_home == ""True"" & (fpl$team_h_score > fpl$team_a_score), 2, ifelse(fpl$was_home == ""True"" & (fpl$team_h_score == fpl$team_a_score),1,ifelse(fpl$was_home == ""False"" & (fpl$team_h_score < fpl$team_a_score),2.5,ifelse(fpl$was_home == ""False"" & (fpl$team_h_score == fpl$team_a_score),1.5, 0))))"
+"0","  )"

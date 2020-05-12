@@ -1,0 +1,2 @@
+"0","ggplotly(ggplot(fpl_mean_pos, aes(round, total_points)) + geom_line(aes(col=position)) +theme_calc() + scale_colour_calc() + scale_fill_calc()+ theme_tech(theme=""X23andme"") + facet_wrap(~ season, ncol = 1) +"
+"0","  labs(title = ""Average Points per Round by Position"",x = ""Round"", y=""Average Points Per Round""))"

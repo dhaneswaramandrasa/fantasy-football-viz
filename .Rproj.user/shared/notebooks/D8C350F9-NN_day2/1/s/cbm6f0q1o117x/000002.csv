@@ -1,0 +1,4 @@
+"0","set.seed(100)"
+"0","nn_reg <- neuralnet(formula = y ~ Var1 + Var2 + Var3, data = dat, hidden = 8, rep =5)"
+"0",""
+"0","plot(nn_reg,rep = ""best"")"

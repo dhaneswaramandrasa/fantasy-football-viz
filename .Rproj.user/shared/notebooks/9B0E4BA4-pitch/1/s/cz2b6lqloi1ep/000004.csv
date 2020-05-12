@@ -1,0 +1,6 @@
+"0","highchart() %>% 
+hc_chart() %>% 
+hc_series(type = ""wordcloud"", data = sun$shots_90, name = ""shots90"")
+"
+"2","Error: 'series' argument is not named in hc_shots90
+"

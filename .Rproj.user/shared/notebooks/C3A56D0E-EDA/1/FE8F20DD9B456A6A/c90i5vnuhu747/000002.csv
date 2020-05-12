@@ -1,0 +1,8 @@
+"0","fpl <- fpl %>%   "
+"0","  mutate(xG_90 = replace_na(xG_90, 0),"
+"0","         xGChain_90 = replace_na(xG_90, 0),"
+"0","         xGBuildup_90 = replace_na(xG_90, 0),"
+"0","         xA_90 = replace_na(xG_90, 0),"
+"0","         shots_90 = replace_na(shots_90, 0),"
+"0","         big_chances_created_90 = replace_na(big_chances_created_90, 0)"
+"0","         )"

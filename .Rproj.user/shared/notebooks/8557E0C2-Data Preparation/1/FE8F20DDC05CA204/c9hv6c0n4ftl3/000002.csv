@@ -1,0 +1,6 @@
+"0","fpl <- fpl %>% "
+"0","  mutate(round = as.factor(round))"
+"0",""
+"0",""
+"0","fpl <- inner_join(fpl,fixture, by=c(""round"", ""club"",""fixture"")) "
+"0",""

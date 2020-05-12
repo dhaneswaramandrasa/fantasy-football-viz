@@ -1,0 +1,29 @@
+"0","liv_elo <- read.csv(""http://api.clubelo.com/liverpool"")"
+"0","glimpse(liv_elo)"
+"1","Observations: 5,388
+"
+"1","Variables: 7
+"
+"1","$ Rank    [3m[38;5;246m<fct>[39m[23m None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, Non…
+"
+"1",""
+"1","$ Club    [3m[38;5;246m<fct>[39m[23m Liverpool, Liverpool, Liverpool, Liverpool, Liverpool, Liverpool, Liverpool, Liverpool, Liverpool, …
+"
+"1",""
+"1","$ Country [3m[38;5;246m<fct>[39m[23m ENG, ENG, ENG, ENG, ENG, ENG, ENG, ENG, ENG, ENG, ENG, ENG, ENG, ENG, ENG, ENG, ENG, ENG, ENG, ENG,…
+"
+"1",""
+"1","$ Level   [3m[38;5;246m<int>[39m[23m 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+"
+"1",""
+"1","$ Elo     [3m[38;5;246m<dbl>[39m[23m 1551.140, 1561.358, 1551.169, 1559.835, 1549.397, 1564.596, 1561.529, 1567.587, 1584.587, 1590.587,…
+"
+"1",""
+"1","$ From    [3m[38;5;246m<fct>[39m[23m 1946-07-07, 1946-09-01, 1946-09-05, 1946-09-08, 1946-09-12, 1946-09-15, 1946-09-22, 1946-09-29, 194…
+"
+"1",""
+"1","$ To      [3m[38;5;246m<fct>[39m[23m 1946-08-31, 1946-09-04, 1946-09-07, 1946-09-11, 1946-09-14, 1946-09-21, 1946-09-28, 1946-09-29, 194…
+"
+"0","liv_elo$To <- as.Date(liv_elo$To)"
+"0",""
+"0","plot(liv_elo$To, liv_elo$Elo)"

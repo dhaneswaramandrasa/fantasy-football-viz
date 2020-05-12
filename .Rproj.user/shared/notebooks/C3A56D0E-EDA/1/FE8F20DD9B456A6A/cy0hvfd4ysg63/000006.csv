@@ -1,0 +1,3 @@
+"0","ggplotly( ggplot(fpl_value_point, aes(value, total_points, text = paste('Name:',second_name,'<br>','Position:',position,'<br>','Club:', club, '<br>','Average Value:', value, '<br>','Average Points:',total_points))) + geom_point(aes(col=position)) + theme_tech(theme=""X23andme"") + "
+"0"," scale_colour_calc()+ "
+"0","  labs(title = ""Average Points by Value"", x = ""Value"", y=""Average Points""), tooltip = 'text')"

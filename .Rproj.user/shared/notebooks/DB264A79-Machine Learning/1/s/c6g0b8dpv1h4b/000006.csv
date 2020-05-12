@@ -1,0 +1,5 @@
+"0","model %>% "
+"0","  layer_dense(units = 64, input_shape = ncol(train_x_keras), activation = ""linear"", name = ""1"") %>% "
+"0","  layer_dense(units = 32, activation = ""linear"", name = ""2"") %>% "
+"0","  layer_dense(units = 16, activation = ""linear"", name = ""3"") %>% "
+"0","  layer_dense(units = 1, activation = ""linear"", name = ""output"")"

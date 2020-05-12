@@ -1,0 +1,7 @@
+"0","fpl_num <- fpl %>% "
+"0","          mutate(was_home = as.numeric(was_home)) %>% "
+"0","          dplyr::select_if(is.numeric)"
+"0",""
+"0","fpl_num_teamcor <- cor(fpl_num %>% dplyr::select(c(total_points, team_form, opponent_form, club_elo, opponent_elo, was_home)))"
+"0",""
+"0","fpl_num_playercor <- cor(fpl_num %>% dplyr::select(c(total_points, value,minutes_chance, fpl_form, influence_form, creativity_form, threat_form, ict_index_form, xG_90, xGChain_90,xA_90, shots_90, key_passes_90)))"

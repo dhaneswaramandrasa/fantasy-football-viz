@@ -1,0 +1,4 @@
+"0","pred_test_nn <- as.numeric(pred_test)
+"
+"2","Error: (list) object cannot be coerced to type 'double'
+"

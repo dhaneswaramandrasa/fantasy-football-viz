@@ -1,0 +1,5 @@
+"0","yardstick::mae_vec(truth = fpl_train$total_points, estimate = fpl_prediction_train)"
+"1","[1]"
+"1"," 1.89482"
+"1","
+"

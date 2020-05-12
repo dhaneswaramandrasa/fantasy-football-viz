@@ -1,0 +1,2 @@
+"0","set.seed(100)"
+"0","dat$y <- runif(nrow(dat),3,4) + sum(dat[1:2,]) + dat$Var3 ^2"

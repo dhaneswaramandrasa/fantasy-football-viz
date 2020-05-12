@@ -1,0 +1,13 @@
+name: FantasyFootballViz
+title: FantasyFootballViz
+username:
+account: dhaneswaramandrasa
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1728492
+bundleId: 2867786
+url: https://dhaneswaramandrasa.shinyapps.io/FantasyFootballViz/
+when: 1583849166.30357
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|code.R|Data Preparation_2018_2019.Rmd|Data Preparation.Rmd|Data_Preparation_2019_2020.Rmd|data_test.csv|data.csv|EDA.html|EDA.Rmd|Field .Rmd|fpl|FPL_datacleansing_2018_2019.csv|FPL_datacleansing_2019_2020.csv|FPL_datacleansing.csv|fpl_forest_class.RDS|fpl_forest_RM_2.RDS|fpl_forest_RM_3.RDS|fpl_forest_RM.RDS|fpl_forest.RDS|fpl_ml.csv|fplgreen.css|gganim.gif|global.Rmd|image1.jpg|images1.jpeg|images2.jpeg|Machine Learning.Rmd|model_nn.rds|pitch.Rmd|player_shots.csv|rfeMod.RDS|rfMod_2.RDS|rfMod_3.RDS|rfMod.RDS|seablue.css|tes.csv|understat.Rmd|Untitled.Rmd|user.png

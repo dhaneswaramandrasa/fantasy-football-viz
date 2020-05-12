@@ -1,0 +1,6 @@
+"0","yardstick::mae_vec(truth = fpl_rm_test$total_points, estimate = round(pred_test_rf))
+"
+"1","[1]"
+"1"," 2.151073"
+"1","
+"

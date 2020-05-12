@@ -1,0 +1,12 @@
+"0","pacman::p_load(dplyr, tidyr, stringr, stringi, purrr,"
+"0","               tibble, rvest, polite, lubridate,"
+"0","               ggplot2, jsonlite, xml2, qdapRegex,"
+"0","               ggtext, extrafont, ggrepel, ggforce,"
+"0","               understatr, ggsoccer,"
+"0","               grid, gridExtra)"
+"2","package ‘ggtext’ is not available (for R version 3.6.1)"
+"2","there is no package called ‘ggtext’"
+"2","Failed to install/load:
+ggtext"
+"0","library(englelab)"
+"0","loadfonts(quiet = TRUE)"

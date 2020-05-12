@@ -1,0 +1,11 @@
+"0","nameerror <- fpl[is.na(fpl$xG.x)==T, c(""second_name"", ""date"",""round"",""minutes"",""club"",""opponent"")] %>% "
+"0","  mutate(second_name = as.character(second_name)) %>% "
+"0","mutate(second_name = as.factor(second_name))"
+"0",""
+"0","nameerror <- nameerror[nameerror$minutes > 0,]"
+"0",""
+"0","nameerror$second_name <- factor(nameerror$second_name)"
+"0",""
+"0","summary(nameerror$second_name)"
+"1","integer(0)
+"

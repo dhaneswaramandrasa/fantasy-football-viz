@@ -1,0 +1,17 @@
+"0"," ggplot(fpl_shots_filter, aes(x = observation, y = ifelse(test = Player == input$PickPlayer1Shots,  yes = -value, no = value), fill = Player, label = value)) +
+     geom_bar(stat = ""identity"") +
+     ggpol::facet_share(~Player, dir = ""h"", scales = ""free"", reverse_num = TRUE) +   
+     coord_flip() +
+     theme_minimal() + ggtech::scale_fill_tech(theme = ""airbnb"") +
+     geom_text(hjust=ifelse(test = fpl_shots_filter$Player == input$PickPlayer1Shots,  yes = 1.1, no = -0.1), size=3, colour=""white"")+
+     labs(y = NULL, x = NULL) +mytheme +
+       theme(legend.position = ""none"",
+             plot.background = element_rect(fill = ""#2D3741"", color = ""#2D3741"", size = 0),
+             panel.background = element_blank(),
+             axis.text.y=element_text(size=12),
+             strip.text.x=element_text( size=12),
+             legend.text=element_text(size=12))
+"
+"2","Error in ifelse(test = fpl_shots_filter$Player == input$PickPlayer1Shots,  : 
+  object 'input' not found
+"

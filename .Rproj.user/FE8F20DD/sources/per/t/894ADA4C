@@ -1,0 +1,27 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1578041012490.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "545|30|668|0|\n669|16|762|0|\n763|4|773|0|\n774|6|781|0|\n",
+    "hash" : "3854118727",
+    "id" : "894ADA4C",
+    "lastKnownWriteTime" : 1579504585,
+    "last_content_update" : 1580296985086,
+    "path" : "~/Documents/Algoritma Data Science/DCD_FPL/Machine Learning.Rmd",
+    "project_path" : "Machine Learning.Rmd",
+    "properties" : {
+        "cursorPosition" : "70,0",
+        "last_setup_crc32" : "",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 9,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

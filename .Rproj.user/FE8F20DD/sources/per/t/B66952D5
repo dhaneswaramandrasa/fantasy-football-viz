@@ -1,0 +1,27 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1576861929309.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3223552500",
+    "id" : "B66952D5",
+    "lastKnownWriteTime" : 1577645331,
+    "last_content_update" : 1577645331910,
+    "path" : "~/Documents/Algoritma Data Science/DCD_FPL/understat.Rmd",
+    "project_path" : "understat.Rmd",
+    "properties" : {
+        "cursorPosition" : "370,0",
+        "last_setup_crc32" : "",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

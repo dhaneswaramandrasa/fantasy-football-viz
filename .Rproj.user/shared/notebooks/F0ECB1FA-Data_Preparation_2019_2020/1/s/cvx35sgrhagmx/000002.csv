@@ -1,0 +1,2 @@
+"0","fpl$scored <- ifelse(fpl$was_home == ""True"", fpl$team_h_score, ifelse(fpl$was_home == ""False"", fpl$team_a_score, NA  ))"
+"0","fpl$conceded <- ifelse(fpl$was_home == ""True"", fpl$team_a_score, ifelse(fpl$was_home == ""False"", fpl$team_h_score, NA  ))"

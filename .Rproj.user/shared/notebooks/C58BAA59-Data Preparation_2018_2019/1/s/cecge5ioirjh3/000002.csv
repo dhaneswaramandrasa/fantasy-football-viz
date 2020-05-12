@@ -1,0 +1,4 @@
+"0","fpl_shots_2018_2019 <- right_join(understat_shots, fpl_shots_2018_2019, by = c(""date"", ""player"")) %>% "
+"0","  mutate(player = as.factor(player)) %>% "
+"0","  mutate(player = droplevels(player))"
+"2","Column `player` joining factors with different levels, coercing to character vector"

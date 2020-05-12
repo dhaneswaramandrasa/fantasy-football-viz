@@ -1,0 +1,5 @@
+"0","colSums(is.infinite(fpl_ml))
+"
+"2","Error in is.infinite(fpl_ml) : 
+  default method not implemented for type 'list'
+"

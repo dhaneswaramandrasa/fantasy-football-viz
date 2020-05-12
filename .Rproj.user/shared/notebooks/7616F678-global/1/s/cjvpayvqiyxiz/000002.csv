@@ -1,0 +1,18 @@
+"0","library(shinyWidgets)
+"
+"2","Warning messages:
+"
+"2","1: Unknown or uninitialised column: 'colors'. 
+"
+"2","2: Unknown or uninitialised column: 'Emission'. 
+"
+"2","3: Unknown or uninitialised column: 'Continent'. 
+"
+"2","4: Unknown or uninitialised column: 'Continent'. 
+"
+"2","5: Unknown or uninitialised column: 'colors'. 
+"
+"2","6: Unknown or uninitialised column: 'Emission'. 
+"
+"2","7: Unknown or uninitialised column: 'Country'. 
+"

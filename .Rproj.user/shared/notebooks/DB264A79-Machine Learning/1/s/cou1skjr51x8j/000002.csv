@@ -1,0 +1,2 @@
+"0","model %>% "
+"0","  compile(loss = ""mse"", optimizer = optimizer_adam(lr = 0.01), metrics = c(""mean_absolute_error""))"

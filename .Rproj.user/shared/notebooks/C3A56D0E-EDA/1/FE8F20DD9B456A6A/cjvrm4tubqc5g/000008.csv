@@ -1,0 +1,5 @@
+"0","fpl <-  fpl[fpl$round >= 5, c(""total_points"", ""first_name"", ""second_name"", ""club"", ""opponent"",""position"",""value"",""round"", ""was_home"", ""date_hour"", ""kickoff_hour"", ""range_day"",""team_form"",""opponent_form"",""club_elo"", ""opponent_elo"", ""minutes_chance"", ""fpl_form"", ""influence_form"", ""creativity_form"", ""threat_form"", ""ict_index_form"", ""xG_90"",""xGChain_90"",""xA_90"", ""shots_90"", ""big_chances_created_90"")]"
+"0",""
+"0","fpl_tab <- fpl[(fpl$second_name == ""Salah"" & fpl$round >= 15 & fpl$round <= 20),]"
+"0"," "
+"0","kable(fpl_tab) %>% kable_styling(bootstrap_options = ""striped"", full_width = F)"
